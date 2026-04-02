@@ -2,6 +2,7 @@ const Loan = require('../models/loan');
 const User = require('../models/user');
 const Wallet = require('../models/wallet');
 const AuditLog = require('../models/AuditLog');
+const PendingAction = require('../models/PendingAction');
 
 /**
  * Admin Controller
@@ -40,6 +41,16 @@ const adminController = {
       const loan = await Loan.findByPk(loanId, { include: User });
       if (!loan) {
         return res.status(404).json({ error: 'Loan entry not found.' });
+      }
+
+      // Maker-Checker: High value loans require SUPER_ADMIN approval
+      if (status === 'approved' && loan.amount > 10000) {
+        const pendingAction = await PendingAction.create({
+          actionType: 'LOAN_APPROVAL',
+          payload: { loanId, status, adminNotes, reviewerId },
+          requestedBy: req.user ? req.user.id : reviewerId || 1
+        });
+        return res.json({ message: 'Loan amount exceeds 10,000 MAD. Sent to SUPER_ADMIN for approval.', pendingAction });
       }
 
       loan.status = status;
@@ -132,50 +143,110 @@ const adminController = {
     const { transactionId, adminNotes } = req.body;
     const { sequelize } = require('../models');
     const Transaction = require('../models/transaction');
+
+    try {
+      const originalTx = await Transaction.findByPk(transactionId);
+      if (!originalTx) throw new Error('Transaction not found');
+      if (originalTx.status !== 'SETTLED') throw new Error('Only SETTLED transactions can be reversed');
+
+      // Maker-Checker: Reversals require SUPER_ADMIN approval
+      const pendingAction = await PendingAction.create({
+        actionType: 'REVERSAL',
+        payload: { transactionId, adminNotes },
+        requestedBy: req.user ? req.user.id : 1
+      });
+      return res.json({ message: 'Reversal request sent to SUPER_ADMIN for approval.', pendingAction });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+
+  /**
+   * Approve a pending action (SUPER_ADMIN only)
+   */
+  approvePendingAction: async (req, res) => {
+    const { actionId } = req.body;
+    const { sequelize } = require('../models');
+    const Transaction = require('../models/transaction');
     const AuditLog = require('../models/AuditLog');
 
     const t = await sequelize.transaction();
 
     try {
-      const originalTx = await Transaction.findByPk(transactionId, { transaction: t });
-      if (!originalTx) throw new Error('Transaction not found');
-      if (originalTx.status !== 'SETTLED') throw new Error('Only SETTLED transactions can be reversed');
+      const action = await PendingAction.findByPk(actionId, { transaction: t });
+      if (!action) throw new Error('Pending action not found');
+      if (action.status !== 'PENDING') throw new Error('Action is not pending');
 
-      // Create counter-entry
-      const reversedTx = await Transaction.create({
-        amount: -originalTx.amount, // Negative amount for reversal
-        type: originalTx.type,
-        status: 'REVERSED',
-        WalletId: originalTx.WalletId,
-        reference: `REV-${originalTx.reference}`,
-        providerName: originalTx.providerName,
-        providerReference: originalTx.providerReference
-      }, { transaction: t });
+      action.status = 'APPROVED';
+      action.approvedBy = req.user ? req.user.id : 1;
+      await action.save({ transaction: t });
 
-      // Update original transaction status (optional, depending on ledger rules, but creating a counter entry is the main action)
-      originalTx.status = 'REVERSED';
-      await originalTx.save({ transaction: t });
+      if (action.actionType === 'REVERSAL') {
+        const { transactionId, adminNotes } = action.payload;
+        const originalTx = await Transaction.findByPk(transactionId, { transaction: t });
+        
+        const reversedTx = await Transaction.create({
+          amount: -originalTx.amount, // Negative amount for reversal
+          type: originalTx.type,
+          status: 'REVERSED',
+          WalletId: originalTx.WalletId,
+          reference: `REV-${originalTx.reference}`,
+          providerName: originalTx.providerName,
+          providerReference: originalTx.providerReference
+        }, { transaction: t });
 
-      // If it affected a wallet, we should reverse the wallet balance too
-      const wallet = await Wallet.findByPk(originalTx.WalletId, { transaction: t });
-      if (wallet) {
-        if (originalTx.type === 'deposit' || originalTx.type === 'CASH_IN' || originalTx.type === 'loan' || originalTx.type === 'COMMISSION') {
-          await wallet.decrement('balance', { by: originalTx.amount, transaction: t });
-        } else if (originalTx.type === 'CASH_OUT' || originalTx.type === 'repayment' || originalTx.type === 'transfer') {
-          await wallet.increment('balance', { by: originalTx.amount, transaction: t });
+        originalTx.status = 'REVERSED';
+        await originalTx.save({ transaction: t });
+
+        const wallet = await Wallet.findByPk(originalTx.WalletId, { transaction: t });
+        if (wallet) {
+          if (['deposit', 'CASH_IN', 'loan', 'COMMISSION'].includes(originalTx.type)) {
+            await wallet.decrement('balance', { by: originalTx.amount, transaction: t });
+          } else if (['CASH_OUT', 'repayment', 'transfer'].includes(originalTx.type)) {
+            await wallet.increment('balance', { by: originalTx.amount, transaction: t });
+          }
         }
+
+        await AuditLog.create({
+          action: 'TRANSACTION_REVERSE_APPROVED',
+          entityType: 'Transaction',
+          entityId: originalTx.id,
+          adminId: action.approvedBy,
+          details: { adminNotes, originalReference: originalTx.reference }
+        }, { transaction: t });
+
+        await t.commit();
+        res.json({ message: 'Transaction reversed successfully', reversedTx });
+      } else if (action.actionType === 'LOAN_APPROVAL') {
+        const { loanId, status, adminNotes, reviewerId } = action.payload;
+        const loan = await Loan.findByPk(loanId, { include: User, transaction: t });
+        
+        loan.status = status;
+        loan.adminNotes = adminNotes;
+        loan.reviewedBy = reviewerId;
+        loan.reviewedAt = new Date();
+        await loan.save({ transaction: t });
+
+        await AuditLog.create({
+          action: `LOAN_${status.toUpperCase()}_APPROVED`,
+          entityType: 'Loan',
+          entityId: loan.id,
+          adminId: action.approvedBy,
+          details: { adminNotes, amount: loan.amount }
+        }, { transaction: t });
+
+        if (status === 'approved' && loan.User) {
+          const wallet = await Wallet.findOne({ where: { UserId: loan.User.id }, transaction: t });
+          if (wallet) {
+            await wallet.increment('balance', { by: loan.amount, transaction: t });
+          }
+        }
+
+        await t.commit();
+        res.json({ message: `Loan successfully ${status}.`, loan });
+      } else {
+        throw new Error('Unknown action type');
       }
-
-      await AuditLog.create({
-        action: 'TRANSACTION_REVERSE',
-        entityType: 'Transaction',
-        entityId: originalTx.id,
-        adminId: req.user ? req.user.id : 1, // Assuming req.user is set
-        details: { adminNotes, originalReference: originalTx.reference }
-      }, { transaction: t });
-
-      await t.commit();
-      res.json({ message: 'Transaction reversed successfully', reversedTx });
     } catch (err) {
       await t.rollback();
       res.status(400).json({ error: err.message });

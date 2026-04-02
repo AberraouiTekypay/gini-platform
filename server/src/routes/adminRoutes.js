@@ -22,6 +22,9 @@ router.get('/user/:id/risk', adminAuth, adminController.getUserRiskProfile);
 router.get('/health', adminAuth, adminController.getSystemHealth);
 
 // Reverse a transaction
-router.post('/transaction/reverse', adminAuth, checkRole(['CREDIT_OFFICER', 'ADMIN']), adminController.reverseTransaction);
+router.post('/transaction/reverse', adminAuth, checkRole(['CREDIT_OFFICER', 'ADMIN', 'SUPER_ADMIN']), adminController.reverseTransaction);
+
+// Approve a pending action
+router.post('/action/approve', adminAuth, checkRole(['SUPER_ADMIN']), adminController.approvePendingAction);
 
 module.exports = router;

@@ -99,6 +99,7 @@ const agentController = {
     const customerId = req.user.id;
 
     const t = await sequelize.transaction();
+    const { Op } = require('sequelize');
 
     try {
       const agent = await User.findByPk(agentId, { transaction: t });
@@ -110,6 +111,23 @@ const agentController = {
 
       if (!customer.Wallet || customer.Wallet.balance < amount) {
         throw new Error('Insufficient Customer wallet balance.');
+      }
+
+      // Fraud Check: Velocity Rules Engine
+      // Block Cash-Out if the customer has done > 10 Cash-Outs in the last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentCashOuts = await Transaction.count({
+        where: {
+          WalletId: customer.Wallet.id,
+          type: 'CASH_OUT',
+          createdAt: { [Op.gte]: oneHourAgo },
+          status: 'SETTLED'
+        },
+        transaction: t
+      });
+
+      if (recentCashOuts >= 10) {
+        throw new Error('FRAUD_ALERT: Velocity limit exceeded. Too many Cash-Out transactions in the last hour.');
       }
 
       // 1. Deduct from Customer wallet

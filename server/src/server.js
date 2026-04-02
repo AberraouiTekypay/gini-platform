@@ -1,5 +1,6 @@
 const app = require('./app');
 const { sequelize } = require('./models');
+const EodSweep = require('./services/EodSweep');
 
 const PORT = process.env.PORT || 5000;
 
@@ -7,5 +8,7 @@ const PORT = process.env.PORT || 5000;
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    // Start End-of-Day Cron Jobs
+    EodSweep.startCron();
   });
 });

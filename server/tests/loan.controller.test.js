@@ -5,10 +5,40 @@ jest.mock('../src/models/loan', () => ({
   findByPk: jest.fn(),
 }));
 jest.mock('../src/models/repayment', () => ({}));
-jest.mock('../src/models/user', () => ({}));
+jest.mock('../src/models/user', () => ({
+  hasOne: jest.fn(),
+  belongsTo: jest.fn(),
+  hasMany: jest.fn(),
+  findByPk: jest.fn(),
+  findOne: jest.fn()
+}));
+jest.mock('../src/models/wallet', () => ({
+  hasMany: jest.fn(),
+  belongsTo: jest.fn(),
+  increment: jest.fn(),
+  decrement: jest.fn(),
+}));
+jest.mock('../src/models/transaction', () => ({
+  create: jest.fn(),
+  belongsTo: jest.fn()
+}));
+jest.mock('../src/models/AuditLog', () => ({
+  create: jest.fn()
+}));
+jest.mock('../src/models/PendingAction', () => ({
+  create: jest.fn()
+}));
+jest.mock('../src/models/Partner', () => ({
+  findOne: jest.fn()
+}));
+jest.mock('../src/providers/BankingProvider', () => ({}));
+jest.mock('../src/services/QueueService', () => ({}));
+jest.mock('../src/services/SignatureProvider', () => ({
+  generateContract: jest.fn()
+}));
 
 const createLoanController = require('../src/Controllers/loancontrollers');
-const Loan = require('../models/loan');
+const Loan = require('../src/models/loan');
 
 const mockScoringService = {
   calculateScore: jest.fn()
@@ -35,7 +65,10 @@ describe('loan controllers', () => {
     // Mock User and Wallet
     const User = require('../src/models/user');
     const Wallet = require('../src/models/wallet');
-    User.findByPk = jest.fn().mockResolvedValue({ id: 1, Wallet: { id: 1, balance: 0 } });
+    User.findByPk = jest.fn().mockResolvedValue({ id: 1, financePreference: 'CONVENTIONAL', Wallet: { id: 1, balance: 0 } });
+    
+    const Partner = require('../src/models/Partner');
+    Partner.findOne.mockResolvedValue({ id: 1, name: 'Test Partner', type: 'CONVENTIONAL' });
 
     // Mock Scoring Service to return 750 (Grade A)
     mockScoringService.calculateScore.mockResolvedValue(750);
@@ -44,18 +77,21 @@ describe('loan controllers', () => {
     Wallet.increment = jest.fn().mockResolvedValue([1]);
     const Transaction = require('../src/models/transaction');
     Transaction.create = jest.fn().mockResolvedValue({});
+    
+    const SignatureProvider = require('../src/services/SignatureProvider');
+    SignatureProvider.generateContract.mockResolvedValue({ status: 'Pending Signature' });
 
     await loanController.applyLoan(req, res);
 
     expect(Loan.create).toHaveBeenCalledWith(expect.objectContaining({
       amount: 1000,
       UserId: 1,
-      status: 'approved',
+      status: 'pending_signature',
       creditGrade: 'A',
       interestRate: 0.05
     }));
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(createdLoan);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ loan: createdLoan }));
   });
 
   test('getLoan responds 404 when loan not found', async () => {

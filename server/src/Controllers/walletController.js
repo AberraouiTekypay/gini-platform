@@ -101,6 +101,47 @@ const walletController = {
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
+  },
+
+  /**
+   * Transfer funds to another user.
+   */
+  transferFunds: async (req, res) => {
+    const { recipientEmail, amount } = req.body;
+    const t = await sequelize.transaction();
+
+    try {
+      const sender = await User.findByPk(req.user.id, { include: Wallet, transaction: t });
+      const recipient = await User.findOne({ 
+        where: { email: recipientEmail }, 
+        include: Wallet,
+        transaction: t 
+      });
+
+      if (!recipient) throw new Error('Recipient not found.');
+      if (sender.Wallet.balance < amount) throw new Error('Insufficient balance.');
+
+      // Check limits
+      await walletController.checkLimits(sender, amount);
+
+      // Perform transfer
+      await Wallet.decrement('balance', { by: amount, where: { id: sender.Wallet.id }, transaction: t });
+      await Wallet.increment('balance', { by: amount, where: { id: recipient.Wallet.id }, transaction: t });
+
+      const tx = await Transaction.create({
+        amount,
+        type: 'transfer',
+        status: 'SETTLED',
+        WalletId: sender.Wallet.id,
+        reference: `TRSF-${Date.now()}`
+      }, { transaction: t });
+
+      await t.commit();
+      res.json({ message: 'Transfer successful', transaction: tx });
+    } catch (err) {
+      await t.rollback();
+      res.status(400).json({ error: err.message });
+    }
   }
 };
 

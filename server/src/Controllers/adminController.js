@@ -1,6 +1,7 @@
 const Loan = require('../models/loan');
 const User = require('../models/user');
 const Wallet = require('../models/wallet');
+const AuditLog = require('../models/AuditLog');
 
 /**
  * Admin Controller
@@ -46,6 +47,15 @@ const adminController = {
       loan.reviewedBy = reviewerId;
       loan.reviewedAt = new Date();
       await loan.save();
+
+      // Audit Trail: Record Admin Action
+      await AuditLog.create({
+        action: `LOAN_${status.toUpperCase()}`,
+        entityType: 'Loan',
+        entityId: loan.id,
+        adminId: reviewerId,
+        details: { adminNotes, amount: loan.amount }
+      });
 
       // Logic for wallet incrementing if approved
       if (status === 'approved' && loan.User) {

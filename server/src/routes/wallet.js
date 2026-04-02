@@ -12,4 +12,7 @@ router.get('/balance', authenticate, walletController.getBalance);
 // Deposit funds (simulated via BankingProvider)
 router.post('/deposit', authenticate, idempotency, walletController.depositFunds);
 
+// Transfer funds between wallets
+router.post('/transfer', authenticate, idempotency, walletController.transferFunds);
+
 module.exports = router;

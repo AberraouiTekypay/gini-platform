@@ -1,4 +1,5 @@
 // server/src/services/LoanEngine.js
+const Partner = require('../models/Partner');
 
 /**
  * Evaluates a loan application based on the user's data and Credo score.
@@ -29,4 +30,29 @@ const evaluateApplication = (userData, credoScore) => {
   return { grade, interestRate, status };
 };
 
-module.exports = { evaluateApplication };
+/**
+ * Routes an application to the appropriate partner tenant.
+ * @param {Object} user - User applying for the loan.
+ * @returns {Promise<Object>} The selected partner.
+ */
+const routeToPartner = async (user) => {
+  const partnerType = user.financePreference === 'ISLAMIC' ? 'PARTICIPATIVE' : 'CONVENTIONAL';
+  
+  // Find a partner matching the type
+  const partner = await Partner.findOne({ where: { type: partnerType } });
+  
+  if (!partner) {
+    throw new Error(`No ${partnerType} partner found to fund this application.`);
+  }
+
+  return partner;
+};
+
+/**
+ * Generates a mock Sharia-compliant agreement for Participative partners.
+ */
+const generateMurabahaAgreement = (loanData) => {
+  return `MURABAHA SALE AGREEMENT: Asset Cost ${loanData.amount}, Profit Margin ${loanData.markup}, Total Sale Price ${loanData.totalPrice}. Subject to Sharia principles.`;
+};
+
+module.exports = { evaluateApplication, routeToPartner, generateMurabahaAgreement };

@@ -3,8 +3,8 @@ const Repayment = require('../models/repayment');
 const User = require('../models/user');
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
-const { evaluateApplication } = require('../services/LoanEngine');
-const { generateRepaymentSchedule } = require('../utils/finance');
+const { evaluateApplication, routeToPartner, generateMurabahaAgreement } = require('../services/LoanEngine');
+const { generateRepaymentSchedule, calculateMurabaha } = require('../utils/finance');
 const LoanProvider = require('../providers/LoanProvider');
 const SignatureProvider = require('../services/SignatureProvider');
 
@@ -20,33 +20,52 @@ module.exports = (scoringService) => ({
     try {
       const user = await User.findByPk(req.user.id, { include: Wallet });
 
-      // 1. Get score from scoringService
+      // 1. Multi-Tenant Routing: Find appropriate partner (Conventional vs Participative)
+      const partner = await routeToPartner(user);
+
+      // 2. Get score from scoringService
       const score = await scoringService.calculateScore(user);
 
-      // 2. Evaluate with LoanEngine
+      // 3. Evaluate with LoanEngine
       const { grade, interestRate, status } = evaluateApplication(user, score);
 
-      // 3. Generate Repayment Schedule
-      const { schedule, breakdown } = generateRepaymentSchedule(amount, interestRate);
+      // 4. Generate Repayment Schedule (Calculate Murabaha if Islamic)
+      let schedule, breakdown, agreement;
+      if (partner.type === 'PARTICIPATIVE') {
+        const murabaha = calculateMurabaha(amount, 0.10, 6); // 10% Profit Margin, 6 Months
+        schedule = murabaha.schedule;
+        breakdown = {
+          principal: amount,
+          profitMargin: murabaha.profitMargin,
+          totalToRepay: murabaha.totalPrice,
+          currency: 'MAD'
+        };
+        agreement = generateMurabahaAgreement({ amount, markup: murabaha.profitMargin, totalPrice: murabaha.totalPrice });
+      } else {
+        const conventional = generateRepaymentSchedule(amount, interestRate);
+        schedule = conventional.schedule;
+        breakdown = conventional.breakdown;
+      }
 
-      // 4. Create Loan Record (status becomes 'pending_signature' if approved)
+      // 5. Create Loan Record
       const loan = await Loan.create({
         amount,
         UserId: user.id,
+        PartnerId: partner.id,
         status: status === 'approved' ? 'pending_signature' : status,
         creditGrade: grade,
-        interestRate: interestRate,
+        interestRate: partner.type === 'PARTICIPATIVE' ? 0 : interestRate,
         repaymentSchedule: schedule,
         autoDebitAuthorized: !!autoDebitAuthorized,
       });
 
-      // 5. Generate Contract if auto-approved
+      // 6. Generate Contract if auto-approved
       let contractInfo = null;
       if (loan.status === 'pending_signature') {
-        contractInfo = await SignatureProvider.generateContract(user.id, { amount, grade, breakdown });
+        contractInfo = await SignatureProvider.generateContract(user.id, { amount, grade, breakdown, agreement });
       }
 
-      res.status(201).json({ loan, contractInfo, breakdown });
+      res.status(201).json({ loan, contractInfo, breakdown, partner: partner.name });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

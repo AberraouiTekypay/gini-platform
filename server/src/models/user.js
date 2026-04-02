@@ -9,7 +9,16 @@ const User = sequelize.define('User', {
   isBlocked: { type: DataTypes.BOOLEAN, defaultValue: false },
   dailyLimit: { type: DataTypes.FLOAT, defaultValue: 5000 },
   monthlyLimit: { type: DataTypes.FLOAT, defaultValue: 50000 },
-  floatBalance: { type: DataTypes.FLOAT, defaultValue: 0 }
+  floatBalance: { type: DataTypes.FLOAT, defaultValue: 0 },
+  financePreference: { 
+    type: DataTypes.ENUM('CONVENTIONAL', 'ISLAMIC'), 
+    defaultValue: 'CONVENTIONAL' 
+  },
+  PartnerId: { type: DataTypes.INTEGER, allowNull: true }
 });
+
+const Partner = require('./Partner');
+User.belongsTo(Partner);
+Partner.hasMany(User);
 
 module.exports = User;

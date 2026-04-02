@@ -21,8 +21,13 @@ const Loan = sequelize.define('Loan', {
   repaid: { type: DataTypes.BOOLEAN, defaultValue: false },
   reviewedBy: { type: DataTypes.INTEGER, allowNull: true },
   reviewedAt: { type: DataTypes.DATE, allowNull: true },
-  adminNotes: { type: DataTypes.TEXT, allowNull: true }
+  adminNotes: { type: DataTypes.TEXT, allowNull: true },
+  PartnerId: { type: DataTypes.INTEGER, allowNull: true }
 });
+
+const Partner = require('./Partner');
+Loan.belongsTo(Partner);
+Partner.hasMany(Loan);
 
 Loan.belongsTo(User);
 User.hasMany(Loan);

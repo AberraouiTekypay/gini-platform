@@ -10,6 +10,7 @@ const kycRoutes = require('./routes/kyc');
 const webhookRoutes = require('./routes/webhookRoutes');
 const agentRoutes = require('./routes/agentRoutes');
 const walletRoutes = require('./routes/wallet');
+const partnerRoutes = require('./routes/partnerRoutes');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/kyc', kycRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/partner', partnerRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));

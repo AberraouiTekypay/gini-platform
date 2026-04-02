@@ -23,40 +23,87 @@
     </nav>
 
     <main class="container mx-auto mt-8 px-4">
-        <div class="mb-8">
-            <h2 class="text-2xl font-semibold text-indigo-900">Pending Loan Approvals</h2>
-            <p class="text-gray-500 text-sm">Review applications and CredoLab scores for manual approval.</p>
+        <div class="flex space-x-4 mb-8 border-b border-gray-200">
+            <button id="tab-loans" onclick="showSection('loans')" class="pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition">Loans</button>
+            <button id="tab-partners" onclick="showSection('partners')" class="pb-2 px-4 text-gray-500 hover:text-indigo-900 transition">Partner Management</button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-100 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">User</th>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Amount</th>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Credo Score</th>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Suggested Grade</th>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Date Applied</th>
-                        <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="loan-table-body" class="divide-y divide-gray-100">
-                    <!-- Data injected here -->
-                    <tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">Loading applications...</td></tr>
-                </tbody>
-            </table>
+        <div id="loans-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-indigo-900">Pending Loan Approvals</h2>
+                <p class="text-gray-500 text-sm">Review applications and CredoLab scores for manual approval.</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">User</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Amount</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Credo Score</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Suggested Grade</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Date Applied</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loan-table-body" class="divide-y divide-gray-100">
+                        <!-- Data injected here -->
+                        <tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">Loading applications...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="partners-section" class="hidden">
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-indigo-900">Financial Partners</h2>
+                <p class="text-gray-500 text-sm">Manage bank and MFI tenants (Conventional & Participative).</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Partner Name</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Type</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Country</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partner-table-body" class="divide-y divide-gray-100">
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Loading partners...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
     <script>
         const API_URL = 'http://localhost:5000/api/admin';
-        const ADMIN_TOKEN = 'default-admin-secret'; // Should be handled via login in production
+        const ADMIN_TOKEN = 'default-admin-secret'; 
+
+        function showSection(section) {
+            document.getElementById('loans-section').classList.toggle('hidden', section !== 'loans');
+            document.getElementById('partners-section').classList.toggle('hidden', section !== 'partners');
+            
+            const tabLoans = document.getElementById('tab-loans');
+            const tabPartners = document.getElementById('tab-partners');
+            
+            if (section === 'loans') {
+                tabLoans.className = 'pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition';
+                tabPartners.className = 'pb-2 px-4 text-gray-500 hover:text-indigo-900 transition';
+                fetchLoans();
+            } else {
+                tabPartners.className = 'pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition';
+                tabLoans.className = 'pb-2 px-4 text-gray-500 hover:text-indigo-900 transition';
+                // fetchPartners(); // Mocked
+            }
+        }
 
         async function fetchLoans() {
             const tableBody = document.getElementById('loan-table-body');
             try {
                 const res = await fetch(`${API_URL}/loans`, {
-                    headers: { 'AdminToken': ADMIN_TOKEN }
+                    headers: { 'AdminToken': ADMIN_TOKEN, 'Authorization': 'Bearer YOUR_TOKEN' } // Note: Fixed header
                 });
                 const loans = await res.json();
                 
@@ -92,7 +139,7 @@
                     </tr>
                 `).join('');
             } catch (err) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 italic">Error fetching data. Ensure the server is running on :5000.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-red-500 italic">Error fetching data. Ensure the server is running.</td></tr>';
             }
         }
 

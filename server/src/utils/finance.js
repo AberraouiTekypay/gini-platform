@@ -58,4 +58,39 @@ const generateRepaymentSchedule = (amount, annualInterestRate, durationMonths = 
   };
 };
 
-module.exports = { generateRepaymentSchedule };
+/**
+ * Calculates Murabaha (Islamic Participative) loan details.
+ * Unlike interest, Murabaha is a fixed 'Profit Margin' on the asset cost.
+ * 
+ * @param {number} cost - Original asset cost.
+ * @param {number} markupPercent - Fixed profit margin (e.g., 0.10 for 10%).
+ * @param {number} months - Repayment duration.
+ * @returns {Object} Total price and monthly installment.
+ */
+const calculateMurabaha = (cost, markupPercent, months) => {
+  const profitMargin = cost * markupPercent;
+  const totalPrice = cost + profitMargin;
+  const monthlyInstallment = totalPrice / months;
+
+  const schedule = [];
+  let currentDate = new Date();
+  for (let i = 1; i <= months; i++) {
+    let dueDate = new Date(currentDate);
+    dueDate.setMonth(currentDate.getMonth() + i);
+    schedule.push({
+      month: i,
+      dueDate: dueDate.toISOString(),
+      amount: parseFloat(monthlyInstallment.toFixed(2)),
+      status: 'pending'
+    });
+  }
+
+  return {
+    totalPrice: parseFloat(totalPrice.toFixed(2)),
+    profitMargin: parseFloat(profitMargin.toFixed(2)),
+    monthlyInstallment: parseFloat(monthlyInstallment.toFixed(2)),
+    schedule
+  };
+};
+
+module.exports = { generateRepaymentSchedule, calculateMurabaha };

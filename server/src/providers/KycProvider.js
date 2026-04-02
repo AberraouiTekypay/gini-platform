@@ -22,6 +22,17 @@ class KycOrchestrator {
     console.log(`[KycOrchestrator] Using ${this.provider.constructor.name} for verification.`);
     return this.provider.verifyIdentity(images);
   }
+
+  /**
+   * Verify biometric selfie against stored ID.
+   * @param {string} selfie - Selfie image data.
+   * @param {string} storedID - Stored ID reference.
+   * @returns {Promise<Object>} Verification results.
+   */
+  async verifyBiometric(selfie, storedID) {
+    console.log(`[KycOrchestrator] Using ${this.provider.constructor.name} for biometric verification.`);
+    return this.provider.verifyBiometric(selfie, storedID);
+  }
 }
 
 module.exports = new KycOrchestrator();

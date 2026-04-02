@@ -122,6 +122,64 @@ const adminController = {
       version: '1.0.0-Hardened'
     };
     res.json(health);
+  },
+
+  /**
+   * Reverse a transaction (Dispute Handling)
+   * Creates a counter-entry in the ledger.
+   */
+  reverseTransaction: async (req, res) => {
+    const { transactionId, adminNotes } = req.body;
+    const { sequelize } = require('../models');
+    const Transaction = require('../models/transaction');
+    const AuditLog = require('../models/AuditLog');
+
+    const t = await sequelize.transaction();
+
+    try {
+      const originalTx = await Transaction.findByPk(transactionId, { transaction: t });
+      if (!originalTx) throw new Error('Transaction not found');
+      if (originalTx.status !== 'SETTLED') throw new Error('Only SETTLED transactions can be reversed');
+
+      // Create counter-entry
+      const reversedTx = await Transaction.create({
+        amount: -originalTx.amount, // Negative amount for reversal
+        type: originalTx.type,
+        status: 'REVERSED',
+        WalletId: originalTx.WalletId,
+        reference: `REV-${originalTx.reference}`,
+        providerName: originalTx.providerName,
+        providerReference: originalTx.providerReference
+      }, { transaction: t });
+
+      // Update original transaction status (optional, depending on ledger rules, but creating a counter entry is the main action)
+      originalTx.status = 'REVERSED';
+      await originalTx.save({ transaction: t });
+
+      // If it affected a wallet, we should reverse the wallet balance too
+      const wallet = await Wallet.findByPk(originalTx.WalletId, { transaction: t });
+      if (wallet) {
+        if (originalTx.type === 'deposit' || originalTx.type === 'CASH_IN' || originalTx.type === 'loan' || originalTx.type === 'COMMISSION') {
+          await wallet.decrement('balance', { by: originalTx.amount, transaction: t });
+        } else if (originalTx.type === 'CASH_OUT' || originalTx.type === 'repayment' || originalTx.type === 'transfer') {
+          await wallet.increment('balance', { by: originalTx.amount, transaction: t });
+        }
+      }
+
+      await AuditLog.create({
+        action: 'TRANSACTION_REVERSE',
+        entityType: 'Transaction',
+        entityId: originalTx.id,
+        adminId: req.user ? req.user.id : 1, // Assuming req.user is set
+        details: { adminNotes, originalReference: originalTx.reference }
+      }, { transaction: t });
+
+      await t.commit();
+      res.json({ message: 'Transaction reversed successfully', reversedTx });
+    } catch (err) {
+      await t.rollback();
+      res.status(400).json({ error: err.message });
+    }
   }
 };
 

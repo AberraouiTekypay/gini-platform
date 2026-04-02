@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import { View, Text } from 'react-native'
 import React from 'react'
 
@@ -8,7 +9,7 @@ const TransactionItem = () => {
     <View className={'flex-row items-center justify-between'}>
       <MoneyRecieveSvg />
       <Text className={'text-[#9B9B9A] font-semibold'}>Prélévement sur wallet{'\n'}<Text className={'font-normal'}>06/04/2023</Text></Text>
-      <Text className={'text-[#9B9B9A] font-semibold'}>-309.00 DH</Text>
+      <Text className={'text-[#9B9B9A] font-semibold'}>-309.00 {env.CURRENCY_CODE}</Text>
     </View>
   )
 }

@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import {View, Text, ScrollView, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -39,7 +40,7 @@ const Loans = () => {
         <Text className={'text-white '}>Repayer mon prêt</Text>
         <View className={'items-end'}>
           <Text className={'text-white'}>Montant dû</Text>
-          <Text className={'text-white font-bold text-lg'}>309.00 DH</Text>
+          <Text className={'text-white font-bold text-lg'}>309.00 {env.CURRENCY_CODE}</Text>
         </View>
       </View>
       <View className={'gap-5 mt-4'}>

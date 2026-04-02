@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import {View, Text, TouchableOpacity} from 'react-native';
 import React, {useState} from 'react';
 import SponsorshipHeader from '../../containers/SponsorshipHeader';
@@ -29,7 +30,7 @@ const Sponsorship = () => {
           </Text>
           <Text className={' text-[#ccc]'}>
           {t('Et gagnez tous les deux')}
-            <Text className={'font-extrabold text-white'}>10 DH</Text>
+            <Text className={'font-extrabold text-white'}>10 {env.CURRENCY_CODE}</Text>
           </Text>
           <Text className={'text-white font-bold text-lg mt-14'}>
           {t('Comment ça marche?')}
@@ -63,7 +64,7 @@ const Sponsorship = () => {
           </View>
           <Text className={'text-[#ccc] text-sm mx-4'}>
           {t('Vos amis souscrivent à un prêt Gini\navec votre code et gagnent')}
-            <Text className={'font-extrabold text-white'}> 10 DH</Text>
+            <Text className={'font-extrabold text-white'}> 10 {env.CURRENCY_CODE}</Text>
           </Text>
         </View>
         <View className={'border-l-2 border-gray-100 h-8 ml-7 border-dashed'} />
@@ -76,7 +77,7 @@ const Sponsorship = () => {
           </View>
           <Text className={'text-[#ccc] text-sm mx-4'}>
           {t('Vous gagnez ')}
-            <Text className={'font-extrabold text-white'}>10 DH </Text>
+            <Text className={'font-extrabold text-white'}>10 {env.CURRENCY_CODE} </Text>
             {t('pour chacun\nde vos amis qui souscrit')}
           </Text>
         </View>

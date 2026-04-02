@@ -7,6 +7,7 @@ import Config from 'react-native-config';
 
 interface EnvConfig {
   API_BASE_URL: string;
+  CURRENCY_CODE: string;
   API_TIMEOUT: number;
   CREDOLAB_SITE_ID: string;
   CREDOLAB_API_KEY: string;
@@ -16,6 +17,7 @@ interface EnvConfig {
 
 const env: EnvConfig = {
   API_BASE_URL: Config.API_BASE_URL || 'http://localhost:5000/v1',
+  CURRENCY_CODE: Config.CURRENCY_CODE || 'MAD',
   API_TIMEOUT: parseInt(Config.API_TIMEOUT || '15000', 10),
   CREDOLAB_SITE_ID: Config.CREDOLAB_SITE_ID || '',
   CREDOLAB_API_KEY: Config.CREDOLAB_API_KEY || '',

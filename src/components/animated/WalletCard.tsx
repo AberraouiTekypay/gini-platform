@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import {View, Text, Image} from 'react-native';
 import React from 'react';
 
@@ -32,7 +33,7 @@ const WalletCard = () => {
     <View className={'absolute w-[350px] h-[260px] items-center rounded-lg pt-8'}>
       <GiniwalletSvg />
       <Text className={'text-white font-bold mt-2'}>{t('Solde actuel')}</Text>
-      <Text className={'text-white text-4xl font-bold mt-6'}>19,768.96 DH</Text>
+      <Text className={'text-white text-4xl font-bold mt-6'}>19,768.96 {env.CURRENCY_CODE}</Text>
       <View className={'flex-row items-center justify-between bg-gray-700 h-[80px] w-[96%] rounded-md px-2 mt-7'}>
         <View className={''}>
           <Text className={'text-white font-bold leading-6'}>{t('Scannez et payez')}</Text>

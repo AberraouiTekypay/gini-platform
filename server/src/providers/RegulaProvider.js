@@ -23,6 +23,25 @@ class RegulaProvider {
       }, 500);
     });
   }
+
+  /**
+   * Mock verifyBiometric implementation for PIN reset.
+   * @param {string} selfie - Selfie image data.
+   * @param {string} storedID - Stored ID reference.
+   * @returns {Promise<Object>} Verification results.
+   */
+  async verifyBiometric(selfie, storedID) {
+    console.log(`[RegulaProvider] Processing biometric verification against stored ID: ${storedID}...`);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          matchConfidence: 0.99,
+          verified: true
+        });
+      }, 500);
+    });
+  }
 }
 
 module.exports = new RegulaProvider();

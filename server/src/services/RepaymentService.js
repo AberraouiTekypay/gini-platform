@@ -20,13 +20,17 @@ class RepaymentService {
     try {
       // Logic: Find all 'Active' loans with a repayment due 'Today'
       // Note: In a production app, we'd check the JSON repaymentSchedule
+      const Partner = require('../models/Partner');
       const activeLoans = await Loan.findAll({
         where: {
           status: 'active',
           repaid: false,
           autoDebitAuthorized: true
         },
-        include: { model: User, include: Wallet }
+        include: [
+          { model: User, include: Wallet },
+          { model: Partner }
+        ]
       });
 
       for (const loan of activeLoans) {
@@ -69,6 +73,14 @@ class RepaymentService {
               });
 
               console.log(`[RepaymentService] Successfully processed payment for Loan ${loan.id}`);
+            } else {
+              loan.status = 'OVERDUE';
+              let penaltyAmount = currentDue.amount * 0.02;
+              let penaltyType = (loan.Partner && loan.Partner.type === 'PARTICIPATIVE') ? 'Charity Contribution' : 'Late Fee';
+              
+              loan.adminNotes = (loan.adminNotes || '') + `\n[OVERDUE] Auto-debit failed. Applied: ${penaltyAmount} MAD (${penaltyType})`;
+              await loan.save();
+              console.log(`[RepaymentService] Failed to process payment for Loan ${loan.id}. Marked as OVERDUE.`);
             }
           }
         }

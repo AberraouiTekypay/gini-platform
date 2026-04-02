@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import {View, Text, TouchableOpacity, ScrollView} from 'react-native';
 import React, {useState} from 'react';
 import DashboardHeader from '../../components/DashboardHeader';
@@ -61,7 +62,7 @@ const Dashboard = () => {
           <Text className={'text-white font-bold text-lg'}>
             {t('Votre solde est de')}
           </Text>
-          <Text className={'text-white font-bold text-4xl'}>00,00 Dh</Text>
+          <Text className={'text-white font-bold text-4xl'}>00,00 {env.CURRENCY_CODE}</Text>
         </View>
 
           {!CardCommand ? (

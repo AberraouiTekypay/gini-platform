@@ -1,3 +1,4 @@
+import env from '../../config/env';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import React from 'react';
 import * as Progress from 'react-native-progress';
@@ -40,19 +41,19 @@ const LoanCardInfos: React.FC<LoanCardInfosProps> = ({width = 347}) => {
             {t('en date du')} <Text className={'font-bold'}>6 Mai 2023</Text>
           </Text>
         </View>
-        <Text className={'text-white text-4xl font-bold my-3'}>309.00 DH</Text>
+        <Text className={'text-white text-4xl font-bold my-3'}>309.00 {env.CURRENCY_CODE}</Text>
         <View className={'flex-row items-center justify-between'}>
           <Text className={'text-white text-sm font-light'}>
             {t('Montant du prêt:')}{'\n'}
-            <Text className={'font-bold text-base'}>15000 DH</Text>
+            <Text className={'font-bold text-base'}>15000 {env.CURRENCY_CODE}</Text>
           </Text>
           <Text className={'text-white text-sm font-light'}>
             {t('Somme payée:')}{'\n'}
-            <Text className={'font-bold text-base'}>3500 DH</Text>
+            <Text className={'font-bold text-base'}>3500 {env.CURRENCY_CODE}</Text>
           </Text>
           <Text className={'text-white text-sm font-light'}>
             {t('Reste à payer:')}{'\n'}
-            <Text className={'font-bold text-base'}>9500 DH</Text>
+            <Text className={'font-bold text-base'}>9500 {env.CURRENCY_CODE}</Text>
           </Text>
         </View>
 
@@ -68,8 +69,8 @@ const LoanCardInfos: React.FC<LoanCardInfosProps> = ({width = 347}) => {
             borderWidth={0}
           />
           <View className={'flex-row justify-between items-center'}>
-            <Text className={'text-white '}>0 DH</Text>
-            <Text className={'text-white '}>15000 Dh</Text>
+            <Text className={'text-white '}>0 {env.CURRENCY_CODE}</Text>
+            <Text className={'text-white '}>15000 {env.CURRENCY_CODE}</Text>
           </View>
         </View>
       </View>

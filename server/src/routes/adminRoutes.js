@@ -21,4 +21,7 @@ router.get('/user/:id/risk', adminAuth, adminController.getUserRiskProfile);
 // System Health Pulse
 router.get('/health', adminAuth, adminController.getSystemHealth);
 
+// Reverse a transaction
+router.post('/transaction/reverse', adminAuth, checkRole(['CREDIT_OFFICER', 'ADMIN']), adminController.reverseTransaction);
+
 module.exports = router;

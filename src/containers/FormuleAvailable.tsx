@@ -1,3 +1,4 @@
+import env from '../config/env';
 import {View, Text, TouchableOpacity} from 'react-native';
 import React from 'react';
 
@@ -30,8 +31,8 @@ const FormuleAvailable: React.FC<FormuleAvailableProps> = ({next}) => {
           <View>
             <Text className={'text-black font-semibold '}>{t('Gini Confort')}</Text>
             <Text className={'text-black'}>
-            {t('entre')} <Text className={'font-semibold'}>200 DH </Text> 
-              <Text className={'font-semibold'}>20 000 DH</Text>
+            {t('entre')} <Text className={'font-semibold'}>200 {env.CURRENCY_CODE} </Text> 
+              <Text className={'font-semibold'}>20 000 {env.CURRENCY_CODE}</Text>
               {'\n'}{t('débloquables en quelques minutes.')}
             </Text>
           </View>

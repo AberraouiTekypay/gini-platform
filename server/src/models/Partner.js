@@ -9,6 +9,7 @@ const Partner = sequelize.define('Partner', {
     allowNull: false 
   },
   country: { type: DataTypes.STRING, defaultValue: 'Morocco' },
+  currencyCode: { type: DataTypes.STRING, defaultValue: 'MAD' },
   webhookUrl: { type: DataTypes.STRING, allowNull: true },
   apiKey: { type: DataTypes.STRING, unique: true }
 });

@@ -1,3 +1,4 @@
+import env from '../config/env';
 import {View, Text, Image} from 'react-native';
 import React from 'react';
 
@@ -35,10 +36,10 @@ const SummaryComponent = () => {
           <Text className={'text-white'}>{t('Mensualité TTC')}</Text>
         </View>
         <View className={'py-3 px-2 gap-2 items-end'}>
-          <Text className={'text-white'}>15,000 DH</Text>
+          <Text className={'text-white'}>15,000 {env.CURRENCY_CODE}</Text>
           <Text className={'text-white'}>06 Moins</Text>
-          <Text className={'text-white'}>64 DH</Text>
-          <Text className={'text-white font-bold'}>2606 Dh</Text>
+          <Text className={'text-white'}>64 {env.CURRENCY_CODE}</Text>
+          <Text className={'text-white font-bold'}>2606 {env.CURRENCY_CODE}</Text>
         </View>
       </View>
     </View>

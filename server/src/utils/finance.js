@@ -53,7 +53,7 @@ const generateRepaymentSchedule = (amount, annualInterestRate, durationMonths = 
       tva: parseFloat(vatAmount.toFixed(2)),
       insurance: parseFloat(insuranceFee.toFixed(2)),
       totalToRepay: parseFloat(totalRepayment.toFixed(2)),
-      currency: 'MAD'
+      currencyCode: 'MAD'
     }
   };
 };

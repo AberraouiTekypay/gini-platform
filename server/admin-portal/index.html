@@ -162,6 +162,25 @@
             }
         }
 
+        async function disputeTransaction(transactionId) {
+            const adminNotes = prompt(`Enter reason for dispute/reversal:`);
+            if (!adminNotes) return;
+            try {
+                const res = await fetch(`${API_URL}/transaction/reverse`, {
+                    method: 'POST',
+                    headers: { 
+                        'AdminToken': ADMIN_TOKEN,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ transactionId, adminNotes })
+                });
+                const result = await res.json();
+                alert(result.message || result.error);
+            } catch (err) {
+                alert('Dispute failed.');
+            }
+        }
+
         fetchLoans();
     </script>
 </body>

@@ -1,3 +1,4 @@
+import env from '../config/env';
 import {View, Text, TouchableOpacity} from 'react-native';
 import React from 'react';
 
@@ -17,7 +18,7 @@ const RefundMiddleButtons = () => {
         <Text className={'text-white font-light leading-5'}>
           {t('Débiter mon')} <Text className={'font-bold'}>{t('compte\nGini')}</Text>
         </Text>
-        <Text className={'text-white font-light leading-5 text-right'}>{t('Montant dû')}{'\n'}<Text className={'font-bold text-lg'}>309.00 Dh</Text></Text>
+        <Text className={'text-white font-light leading-5 text-right'}>{t('Montant dû')}{'\n'}<Text className={'font-bold text-lg'}>309.00 {env.CURRENCY_CODE}</Text></Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('RefundAgencyFilter')} className={'flex-row items-center rounded-lg w-[347px] h-[80px] bg-white px-4'}>
         <BankSvg />
@@ -30,7 +31,7 @@ const RefundMiddleButtons = () => {
         {t('Rembourser par  ')}<Text className={'font-bold'}>{t('anticipation')}{'\n'}</Text>
         <Text className={'font-bold text-[10px]'}>{t('réduction cadeau de  ')}<Text className={'font-light'}>-2.5%</Text></Text>
         </Text>
-        <Text className={'text-white font-light leading-5 text-right'}>{t('Total restant')}{'\n'}<Text className={'font-bold text-lg'}>9440.36 Dh</Text></Text></TouchableOpacity>
+        <Text className={'text-white font-light leading-5 text-right'}>{t('Total restant')}{'\n'}<Text className={'font-bold text-lg'}>9440.36 {env.CURRENCY_CODE}</Text></Text></TouchableOpacity>
     </View>
   );
 };

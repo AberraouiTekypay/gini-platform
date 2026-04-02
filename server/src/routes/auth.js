@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 const { authenticate } = require('../middlewares/auth');
+const KycOrchestrator = require('../providers/KycProvider');
 
 router.get('/protected', authenticate, (req, res) => {
   res.json({ message: 'You are authenticated', user: req.user });
@@ -24,6 +25,57 @@ router.post('/login', async (req, res) => {
   }
   const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
   res.json({ token });
+});
+
+// Store reset sessions in memory (for simulation). Use Redis in production.
+const resetSessions = new Map();
+
+router.post('/reset-pin/request', async (req, res) => {
+  const { email, selfie } = req.body;
+  const user = await User.findOne({ where: { email } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Simulate retrieving stored ID reference for the user
+  const storedID = `ID-${user.id}`;
+  
+  try {
+    const kycResult = await KycOrchestrator.verifyBiometric(selfie, storedID);
+    
+    if (kycResult.success && kycResult.matchConfidence >= 0.99) {
+      const resetToken = jwt.sign({ id: user.id, intent: 'reset-pin' }, process.env.JWT_SECRET, { expiresIn: '15m' });
+      resetSessions.set(resetToken, user.id);
+      res.json({ message: 'Biometric verification successful. Proceed to reset PIN.', resetToken });
+    } else {
+      res.status(401).json({ error: 'Biometric verification failed. Match confidence too low.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error during biometric verification' });
+  }
+});
+
+router.post('/reset-pin/confirm', async (req, res) => {
+  const { resetToken, newPin } = req.body;
+  
+  if (!resetToken || !resetSessions.has(resetToken)) {
+    return res.status(401).json({ error: 'Invalid or expired reset token' });
+  }
+
+  try {
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+    if (decoded.intent !== 'reset-pin') throw new Error('Invalid token intent');
+
+    const user = await User.findByPk(decoded.id);
+    if (!user) throw new Error('User not found');
+
+    const hashedPin = await bcrypt.hash(newPin, 10);
+    user.password = hashedPin; // Reusing password field as PIN
+    await user.save();
+
+    resetSessions.delete(resetToken);
+    res.json({ message: 'PIN reset successfully' });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 });
 
 module.exports = router;

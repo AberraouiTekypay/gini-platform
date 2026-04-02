@@ -7,6 +7,8 @@ All endpoints are prefixed with `/api`. Authenticated requests require the `Auth
 |--------|----------|-------------|
 | POST | `/register` | Register a new user. Returns a JWT. |
 | POST | `/login` | Authenticate an existing user. Returns a JWT. |
+| POST | `/reset-pin/request` | Initiate biometric PIN reset (Regula). |
+| POST | `/reset-pin/confirm` | Finalize PIN reset with temporary token. |
 
 **Payload Sample (`/register`):**
 ```json
@@ -31,7 +33,8 @@ All endpoints are prefixed with `/api`. Authenticated requests require the `Auth
 ```json
 {
   "amount": 5000,
-  "autoDebitAuthorized": true
+  "autoDebitAuthorized": true,
+  "idempotency-key": "uuid-v4-key"
 }
 ```
 
@@ -52,11 +55,14 @@ All endpoints are prefixed with `/api`. Authenticated requests require the `Auth
 |--------|----------|-------------|
 | GET | `/balance` | Retrieve current wallet balance. |
 | POST | `/deposit` | Deposit funds (simulated). |
+| POST | `/transfer` | Peer-to-peer fund transfer. |
 
-**Payload Sample (`/deposit`):**
+**Payload Sample (`/transfer`):**
 ```json
 {
-  "amount": 1000
+  "recipientEmail": "friend@example.com",
+  "amount": 200,
+  "idempotency-key": "uuid-v4-key"
 }
 ```
 
@@ -75,17 +81,38 @@ All endpoints are prefixed with `/api`. Authenticated requests require the `Auth
 }
 ```
 
-## 🛠 Admin (`/admin`)
-...
-**Payload Sample (`/loan/review`):**
+## 🛒 Merchant API (`/merchant`)
+Allows external e-commerce sites to integrate Gini payments.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/v1/checkout` | Create a new payment request for an order. |
+| POST | `/v1/confirm` | Finalize a payment (Internal callback). |
+
+**Payload Sample (`/v1/checkout`):**
 ```json
 {
-  "loanId": 1,
-  "status": "approved",
-  "adminNotes": "Low risk profile confirmed.",
-  "reviewerId": 99
+  "amount": 450,
+  "merchantId": "MARCH-001",
+  "orderId": "ORD-992",
+  "callbackUrl": "https://merchant.site/webhook"
 }
 ```
+
+## 🛠 Admin (`/admin`)
+Requires `AdminToken` header.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/loans` | Fetch all pending loan applications for review. |
+| POST | `/loan/review` | Approve or reject a loan application. |
+| GET | `/user/:id/risk` | Retrieve detailed CredoLab risk profile for a user. |
+| POST | `/transaction/reverse` | Request a transaction reversal (Maker-Checker). |
+| POST | `/action/approve` | (Super Admin) Approve a pending sensitive action. |
+| GET | `/trial-balance` | View financial observability report. |
+| GET | `/health` | Check system and partner connectivity. |
+
+**Headers:**
+- `admintoken`: Your authorized admin secret key.
+- `Authorization`: Bearer `<admin_user_token>`.
 
 ---
 
@@ -112,8 +139,3 @@ Called by the Bank's core banking system to confirm funds have been moved to the
   "status": "SUCCESS"
 }
 ```
-
-### 2. Reconciliation Pulse
-**GET** `/api/partner/v1/recon` (Planned)
-Returns a list of all `SETTLED` transactions for the current billing cycle.
-

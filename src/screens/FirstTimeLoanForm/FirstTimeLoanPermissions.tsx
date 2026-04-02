@@ -14,10 +14,18 @@ import SmsSvg from '../../../assets/SmsSvg.svg';
 import FormSvg from '../../../assets/FormSvg.svg';
 import ButtonRadius from '../../components/atoms/ButtonRadius';
 import {useTranslation} from 'react-i18next';
+import { useCredoPermissions } from '../../hooks/useCredoPermissions';
+import { NavigationProp } from '../../navigation/types';
 
 const FirstTimeLoanPermissions = () => {
   const {t} = useTranslation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
+  const { requestCredoData } = useCredoPermissions();
+
+  const handleAuthorization = async () => {
+    await requestCredoData();
+    navigation.navigate('FirstTimeLoanAnalyse');
+  };
 
   return (
     <ScrollView>
@@ -57,7 +65,7 @@ const FirstTimeLoanPermissions = () => {
             </View>
             <Text className={'text-[#ccc]'}>
               {t(
-                'Nous collectons les événements de votre calendrier pour mieux\ncomprendre vos habitudes et votre capacité à respecter les\néchéances.',
+                'Nous collectons les événements de votre calendrier pour mieux\ncomprendre vos habitudes and votre capacité à respecter les\néchéances.',
               )}
             </Text>
           </View>
@@ -68,7 +76,7 @@ const FirstTimeLoanPermissions = () => {
             </View>
             <Text className={'text-[#ccc]'}>
               {t(
-                `Nous collectons des données sur les paramètres de votre téléphone,\ncomme la langue et la durée de l'écran, pour mieux comprendre\nvotre profil d'utilisateur.`,
+                `Nous collectons des données sur les paramètres de votre téléphone,\ncomme la langue and la durée de l'écran, pour mieux comprendre\nvotre profil d'utilisateur.`,
               )}
             </Text>
           </View>
@@ -79,7 +87,7 @@ const FirstTimeLoanPermissions = () => {
             </View>
             <Text className={'text-[#ccc]'}>
               {t(
-                'Nous collectons des données anonymes sur les images et les vidéos\nde votre galerie pour mieux comprendre vos\nintérêts et vos préférences.',
+                'Nous collectons des données anonymes sur les images and les vidéos\nde votre galerie pour mieux comprendre vos\nintérêts and vos préférences.',
               )}
             </Text>
           </View>
@@ -126,14 +134,14 @@ const FirstTimeLoanPermissions = () => {
             </View>
             <Text className={'text-[#ccc]'}>
               {t(
-                `Nous collectons des informations sur vos contacts pour mieux\ncomprendre votre réseau et votre environnement social. Cela nous\npermet d'améliorer notre évaluation de votre profil de crédit.`,
+                `Nous collectons des informations sur vos contacts pour mieux\ncomprendre votre réseau and votre environnement social. Cela nous\npermet d'améliorer notre évaluation de votre profil de crédit.`,
               )}
             </Text>
           </View>
         </View>
         <View className={'items-center'}>
           <ButtonRadius
-            onPress={() => navigation.navigate('FirstTimeLoanAnalyse')}
+            onPress={handleAuthorization}
             buttonText={t('J’autorise la collecte des informations')}
             background={true}
           />

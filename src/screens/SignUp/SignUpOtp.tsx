@@ -12,7 +12,8 @@ import MoneyFlySvg from '../../../assets/MoneyFlySvg.svg';
 import TextInputComponent from '../../components/atoms/TextInputComponent';
 import ButtonRadius from '../../components/atoms/ButtonRadius';
 import { useAppContext } from '../../AppContext';
-// import api from '../../services/api'; // TODO: Fix this import when api service is ready
+import axios from 'axios';
+import { env } from '../../config/env';
 
 const SignUpOtp: React.FC = () => {
   const { t } = useTranslation();
@@ -37,11 +38,10 @@ const SignUpOtp: React.FC = () => {
     }
 
     try {
-      // TODO: Implement actual API call
-      // await api.post('/api/v1/users/verifyotp', {
-      //   phone_number: data.signUpInfos.phoneNumber,
-      //   otpCode: otpCode,
-      // });
+      await axios.post(`${env.API_BASE_URL}/api/v1/users/verifyotp`, {
+         phone_number: data.signUpInfos.phoneNumber,
+         otpCode: otpCode,
+       });
       navigation.navigate('PinExplainer');
     } catch (error: any) {
       console.error('Error verifying OTP:', error);

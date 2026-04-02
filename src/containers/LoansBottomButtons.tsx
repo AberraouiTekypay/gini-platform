@@ -5,9 +5,11 @@ import RingSvg from '../../assets/RingSvg.svg';
 import CoinsWhiteSvg from '../../assets/CoinsWhiteSvg.svg';
 import ReceiptSvg from '../../assets/ReceiptSvg.svg';
 import ScoreSvg from '../../assets/ScoreSvg.svg';
-import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '../navigation/types';
 
 const LoansBottomButtons = () => {
+  const navigation = useNavigation<NavigationProp>();
   return (
       <View className={'flex-row justify-between items-center self-end w-full px-1 '}>
         <View className={'items-center gap-1'}>
@@ -30,6 +32,7 @@ const LoansBottomButtons = () => {
         </View>
         <View className={'items-center gap-1'}>
           <TouchableOpacity
+            onPress={() => navigation.navigate('FirstTimeLoanForm')}
             className={
               'bg-[#393E41] w-14 h-14 rounded-full items-center justify-center'
             }>

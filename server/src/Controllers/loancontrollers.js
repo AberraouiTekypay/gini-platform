@@ -1,16 +1,8 @@
-codex/reorganiser-la-logique-de-scoring
-// src/controllers/loancontrollers.js
-const Loan = require('../models/Loan');
-const Repayment = require('../models/Repayment');
-const User = require('../models/User');
-const Wallet = require('../models/wallet');
-const Transaction = require('../models/transaction');
-=======
-// src/controllers/loanController.js
 const Loan = require('../models/loan');
 const Repayment = require('../models/repayment');
 const User = require('../models/user');
-main
+const Wallet = require('../models/wallet');
+const Transaction = require('../models/transaction');
 
 /**
  * Factory that creates loan controller functions with dependency injection.
@@ -36,14 +28,16 @@ module.exports = (scoringService) => ({
         status: 'approved'
       });
 
-      await Wallet.increment('balance', { by: amount, where: { UserId: user.id } });
-
-      await Transaction.create({
-        amount,
-        type: 'loan',
-        status: 'completed',
-        WalletId: user.Wallet.id
-      });
+      if (user.Wallet) {
+        await Wallet.increment('balance', { by: amount, where: { UserId: user.id } });
+        
+        await Transaction.create({
+          amount,
+          type: 'loan',
+          status: 'completed',
+          WalletId: user.Wallet.id
+        });
+      }
 
       res.status(201).json(loan);
     } catch (err) {
@@ -98,4 +92,3 @@ module.exports = (scoringService) => ({
     res.json({ message: 'Loan rejected', loan });
   }
 });
-

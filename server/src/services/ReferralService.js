@@ -27,6 +27,12 @@ class ReferralService {
 
       const t = await sequelize.transaction();
       try {
+        // 0. Find the Marketing Wallet
+        const marketingWallet = await Wallet.findOne({ where: { label: 'GINI_MARKETING' }, transaction: t });
+        if (marketingWallet) {
+          await marketingWallet.decrement('balance', { by: REWARD_AMOUNT, transaction: t });
+        }
+
         // 1. Add reward to referrer's wallet
         await Wallet.increment('balance', { 
           by: REWARD_AMOUNT, 

@@ -52,6 +52,10 @@ class BankingProvider {
 
     console.log(`[BankingProvider] Processing QR transaction: Gross=${amount}, Net=${netAmount}, GiniFee=${giniFee}, PartnerFee=${partnerFee}`);
 
+    // Internal Accounting: Credit Gini Revenue Wallet
+    const Wallet = require('../models/wallet');
+    await Wallet.increment('balance', { by: giniFee, where: { label: 'GINI_REVENUE' } });
+
     return {
       success: true,
       transactionId: `QR-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,

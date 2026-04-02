@@ -5,6 +5,7 @@ const User = require('../models/user');
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
 const BankingProvider = require('../providers/BankingProvider');
+const AlertService = require('./AlertService');
 
 /**
  * Service to handle automated loan repayments.
@@ -71,6 +72,9 @@ class RepaymentService {
                 providerName: withdrawal.provider,
                 providerReference: withdrawal.transactionId
               });
+
+              // Push Notification
+              await AlertService.sendPushNotification(loan.UserId, 'Loan Repayment 💳', `Your monthly installment of ${currentDue.amount} MAD has been automatically debited.`);
 
               console.log(`[RepaymentService] Successfully processed payment for Loan ${loan.id}`);
             } else {

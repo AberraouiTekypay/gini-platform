@@ -2,6 +2,7 @@
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
 const { sequelize } = require('../models');
+const AlertService = require('./AlertService');
 
 /**
  * Value Added Services (VAS)
@@ -33,6 +34,10 @@ class VasService {
       }, { transaction: t });
 
       await t.commit();
+
+      // Push Notification
+      await AlertService.sendPushNotification(userId, 'Payment Successful 🧾', `Your payment of ${amount} MAD to ${biller} was successful.`);
+
       return { success: true, transactionId: tx.reference };
     } catch (err) {
       await t.rollback();

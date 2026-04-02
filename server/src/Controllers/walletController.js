@@ -3,6 +3,7 @@ const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
 const User = require('../models/user');
 const BankingProvider = require('../providers/BankingProvider');
+const AlertService = require('../services/AlertService');
 const { Op } = require('sequelize');
 
 /**
@@ -137,6 +138,11 @@ const walletController = {
       }, { transaction: t });
 
       await t.commit();
+      
+      // 6. Push Notifications
+      await AlertService.sendPushNotification(sender.id, 'Transfer Sent 💸', `You sent ${amount} MAD to ${recipientEmail}.`);
+      await AlertService.sendPushNotification(recipient.id, 'Transfer Received 💰', `You received ${amount} MAD from ${sender.email}.`);
+
       res.json({ message: 'Transfer successful', transaction: tx });
     } catch (err) {
       await t.rollback();

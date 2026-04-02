@@ -3,6 +3,7 @@ const User = require('../models/user');
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
 const NotificationService = require('../services/notificationService');
+const AlertService = require('../services/AlertService');
 const { sequelize } = require('../models');
 
 /**
@@ -83,6 +84,12 @@ const agentController = {
         providerReference: `COMM-${Date.now()}`
       }, { transaction: t });
 
+      // 5. Internal Accounting: Credit Gini Revenue
+      await Wallet.increment('balance', { by: giniFee, where: { label: 'GINI_REVENUE' }, transaction: t });
+
+      // 6. Push Notification
+      await AlertService.sendPushNotification(customerId, 'Cash-In Received! 💰', `${amount} MAD has been added to your wallet via Agent.`);
+
       await t.commit();
       res.json({ message: 'Cash-In successful.', agentCommission, giniFee });
     } catch (err) {
@@ -161,6 +168,12 @@ const agentController = {
         providerName: 'AGENT_COMMISSION',
         providerReference: `COMM-OUT-${Date.now()}`
       }, { transaction: t });
+
+      // 5. Internal Accounting: Credit Gini Revenue
+      await Wallet.increment('balance', { by: giniFee, where: { label: 'GINI_REVENUE' }, transaction: t });
+
+      // 6. Push Notification
+      await AlertService.sendPushNotification(customerId, 'Cash-Out Successful! 💸', `${amount} MAD has been withdrawn from your wallet.`);
 
       await t.commit();
       res.json({ message: 'Cash-Out initiated. Agent can now hand over physical cash.', agentCommission, giniFee });

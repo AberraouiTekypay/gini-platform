@@ -7,6 +7,7 @@ const { evaluateApplication, routeToPartner, generateMurabahaAgreement } = requi
 const { generateRepaymentSchedule, calculateMurabaha } = require('../utils/finance');
 const LoanProvider = require('../providers/LoanProvider');
 const SignatureProvider = require('../services/SignatureProvider');
+const AlertService = require('../services/AlertService');
 
 /**
  * Factory that creates loan controller functions with dependency injection.
@@ -107,6 +108,9 @@ module.exports = (scoringService) => ({
             providerName: disbursement.providerName,
             providerReference: disbursement.providerReference
           });
+
+          // 6. Push Notification
+          await AlertService.sendPushNotification(loan.UserId, 'Loan Disbursed! 💸', `Your loan of ${loan.amount} MAD has been credited to your wallet.`);
         }
       }
 

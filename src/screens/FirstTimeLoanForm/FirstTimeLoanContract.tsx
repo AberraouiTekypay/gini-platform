@@ -1,13 +1,15 @@
-import {View, Text, ScrollView} from 'react-native';
-import React from 'react';
+import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import React, {useState} from 'react';
 import LoanFormHeader from '../../containers/LoanFormHeader';
 import ButtonRadius from '../../components/atoms/ButtonRadius';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import CheckWhite from '../../assets/CheckWhite.svg';
 
 const FirstTimeLoanContract = () => {
   const {t} = useTranslation()
     const navigation = useNavigation()
+    const [authorized, setAuthorized] = useState(false)
   return (
     <View className={'flex-1 px-4 pt-6'}>
       <ScrollView className={'flex-1'}>
@@ -124,8 +126,36 @@ const FirstTimeLoanContract = () => {
           pulvinar sapien et ligula ullamcorper malesuada.
         </Text>
       </ScrollView>
-      <View className={'items-center'}>
-        <ButtonRadius onPress={() => navigation.navigate('FirstTimeLoanSignature')} buttonText={t('Je souhaite signer le contrat')} background={true} />
+
+      <View className={'py-4 border-t border-gray-100'}>
+        <View className={'bg-gray-50 p-3 rounded-lg mb-4 border border-gray-100'}>
+          <Text className={'text-black font-bold text-xs'}>
+            {t('Mandat de Prélèvement (Direct Debit Mandate)')}
+          </Text>
+          <Text className={'text-black mt-1 text-[10px]'}>
+            {t('En signant ce contrat, j\'autorise expressément Gini à prélever automatiquement les montants dus sur mon compte/portefeuille aux dates d\'échéance convenues dans le calendrier de remboursement.')}
+          </Text>
+        </View>
+
+        <TouchableOpacity 
+          onPress={() => setAuthorized(!authorized)}
+          className={'flex-row items-center'}
+        >
+          <View className={`w-5 h-5 rounded border ${authorized ? 'bg-[#936EE3] border-[#936EE3]' : 'bg-white border-gray-200'} items-center justify-center mr-2 shadow-sm`}>
+            {authorized && <CheckWhite width={12} height={12} />}
+          </View>
+          <Text className={'text-black text-[11px] flex-1'}>
+            {t('J\'autorise expressément le prélèvement automatique (Mandat de Prélèvement)')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className={'items-center mb-6'}>
+        <ButtonRadius 
+          onPress={() => authorized && navigation.navigate('FirstTimeLoanSignature')} 
+          buttonText={t('Je souhaite signer le contrat')} 
+          background={authorized} 
+        />
       </View>
     </View>
   );

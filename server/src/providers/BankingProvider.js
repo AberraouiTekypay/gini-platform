@@ -19,6 +19,22 @@ class BankingProvider {
       timestamp: new Date().toISOString()
     };
   }
+
+  /**
+   * Simulates a withdrawal of funds from a user's account/wallet to the Gini Ledger.
+   * @param {string} walletId - Target wallet ID.
+   * @param {number} amount - Amount to withdraw.
+   * @returns {Promise<Object>} Withdrawal transaction details.
+   */
+  async withdraw(walletId, amount) {
+    console.log(`[BankingProvider] Withdrawing ${amount} from wallet ${walletId} to Gini Ledger`);
+    return {
+      success: true,
+      transactionId: `WITHDRAW-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      provider: 'GiniBank',
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 module.exports = new BankingProvider();

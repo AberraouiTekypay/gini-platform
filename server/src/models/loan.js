@@ -6,9 +6,14 @@ const User = require('./user');
 const Loan = sequelize.define('Loan', {
   amount: { type: DataTypes.FLOAT, allowNull: false },
   status: { 
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'repaid'), 
+    type: DataTypes.ENUM('pending', 'pending_signature', 'active', 'approved', 'rejected', 'repaid'), 
     defaultValue: 'pending' 
   },
+  signatureStatus: { 
+    type: DataTypes.ENUM('PENDING', 'SIGNED', 'FAILED'), 
+    defaultValue: 'PENDING' 
+  },
+  autoDebitAuthorized: { type: DataTypes.BOOLEAN, defaultValue: false },
   creditGrade: { type: DataTypes.STRING, allowNull: true },
   interestRate: { type: DataTypes.FLOAT, allowNull: true },
   repaymentSchedule: { type: DataTypes.JSON, allowNull: true },

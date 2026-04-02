@@ -6,6 +6,7 @@ const Transaction = require('../models/transaction');
 const { evaluateApplication } = require('../services/LoanEngine');
 const { generateRepaymentSchedule } = require('../utils/finance');
 const LoanProvider = require('../providers/LoanProvider');
+const SignatureProvider = require('../services/SignatureProvider');
 
 /**
  * Factory that creates loan controller functions with dependency injection.
@@ -15,7 +16,7 @@ module.exports = (scoringService) => ({
    * Apply for a loan after validating user eligibility via the scoring service.
    */
   applyLoan: async (req, res) => {
-    const { amount } = req.body;
+    const { amount, autoDebitAuthorized } = req.body;
     try {
       const user = await User.findByPk(req.user.id, { include: Wallet });
 
@@ -28,32 +29,61 @@ module.exports = (scoringService) => ({
       // 3. Generate Repayment Schedule
       const schedule = generateRepaymentSchedule(amount, interestRate);
 
-      // 4. Create Loan Record
+      // 4. Create Loan Record (status becomes 'pending_signature' if approved)
       const loan = await Loan.create({
         amount,
         UserId: user.id,
-        status: status,
+        status: status === 'approved' ? 'pending_signature' : status,
         creditGrade: grade,
         interestRate: interestRate,
         repaymentSchedule: schedule,
+        autoDebitAuthorized: !!autoDebitAuthorized,
       });
 
-      // 5. If auto-approved, disburse via Provider
-      if (status === 'approved' && user.Wallet) {
+      // 5. Generate Contract if auto-approved
+      let contractInfo = null;
+      if (loan.status === 'pending_signature') {
+        contractInfo = await SignatureProvider.generateContract(user.id, { amount, grade });
+      }
+
+      res.status(201).json({ loan, contractInfo });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+
+  /**
+   * Simulate signing the loan contract (Morocco Launch simulation)
+   */
+  signLoan: async (req, res) => {
+    const { loanId } = req.params;
+    try {
+      const loan = await Loan.findByPk(loanId, { include: { model: User, include: Wallet } });
+      if (!loan) return res.status(404).json({ error: 'Loan not found' });
+      if (loan.status !== 'pending_signature') return res.status(400).json({ error: 'Loan not pending signature' });
+
+      // Simulate Damanesign Callback
+      await SignatureProvider.handleSignatureSuccess(loan.id);
+      
+      // Refresh loan data after signature success
+      await loan.reload();
+
+      // Disbursement happens ONLY AFTER SIGNED
+      if (loan.signatureStatus === 'SIGNED' && loan.User && loan.User.Wallet) {
         const disbursement = await LoanProvider.disburseLoan({
-          walletId: user.Wallet.id,
-          amount: amount,
+          walletId: loan.User.Wallet.id,
+          amount: loan.amount,
           loanId: loan.id
         });
 
         if (disbursement.success) {
-          await Wallet.increment('balance', { by: amount, where: { UserId: user.id } });
+          await Wallet.increment('balance', { by: loan.amount, where: { UserId: loan.UserId } });
           
           await Transaction.create({
-            amount,
+            amount: loan.amount,
             type: 'loan',
             status: 'completed',
-            WalletId: user.Wallet.id,
+            WalletId: loan.User.Wallet.id,
             reference: disbursement.loanReference,
             providerName: disbursement.providerName,
             providerReference: disbursement.providerReference
@@ -61,7 +91,7 @@ module.exports = (scoringService) => ({
         }
       }
 
-      res.status(201).json(loan);
+      res.json({ message: 'Loan signed and disbursed successfully', loan });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

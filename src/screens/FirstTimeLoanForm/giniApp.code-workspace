@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "three-js-custom-object-loading",
+		"docwriter.progress.trackFunctions": false
+	}
+}

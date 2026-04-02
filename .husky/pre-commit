@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🛡️ Institutional Guardrails: Verifying Type Safety & Linting..."
+npx tsc --noEmit && npm run lint

@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+.expo
+.next
+.bundle
+vendor
+android/app/build
+ios/Pods

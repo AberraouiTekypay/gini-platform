@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const kycRoutes = require('./routes/kyc');
 const webhookRoutes = require('./routes/webhookRoutes');
 const agentRoutes = require('./routes/agentRoutes');
+const walletRoutes = require('./routes/wallet');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));

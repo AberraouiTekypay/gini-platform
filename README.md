@@ -13,24 +13,43 @@ Gini transcends traditional banking by leveraging behavioral data analytics. By 
 - **Database**: PostgreSQL.
 - **Security**: Biometric authentication & Encrypted storage.
 
-## 🚀 Quick Start (Development)
+## 🚀 Developer Quickstart (Development)
 
-### 1. Active Mobile Core
+The platform is a modular monorepo. Follow these steps for local setup:
+
+### Step 1: Mobile Core (React Native)
+From the root directory, install dependencies and start the Metro bundler.
 ```bash
-# From the root directory
 npm install
 npx react-native start
 # In a new terminal
 npx react-native run-android # or run-ios
 ```
 
-### 2. Backend API
+### Step 2: Backend API (Node.js)
+Navigate to the server directory, install dependencies, and start the API server.
 ```bash
 cd server
 npm install
 npm start
 ```
 
-## 📂 Repository Structure
-- `./`: Active mobile application core (Target for all new PRs).
-- `server/`: Production API services.
+### Step 3: Admin Portal (Web Dashboard)
+Navigate to the admin portal directory and serve the static files or install dependencies.
+```bash
+cd server/admin-portal
+# Use a local server (e.g., Live Server or python -m http.server)
+# Default API endpoint: http://localhost:5000/api/admin
+```
+
+## 📱 WhatsApp Mocking (Local Testing)
+For local development, the WhatsApp 2FA flow is simulated in the `NotificationService.js`.
+1. Initiate a **Cash-In** operation via the `/api/agent/cash-in` endpoint.
+2. Check the **Server Console Logs** to see the simulated WhatsApp message.
+3. Use the static code `1234` to verify the transaction in development.
+
+## 📁 Documentation
+Detailed blueprints and guides are located in `server/docs/`:
+- **[API Reference](server/docs/API_REFERENCE.md)**
+- **[Database Map](server/docs/DATABASE_MAP.md)**
+- **[Architecture Blueprint](ARCHITECTURE.md)**

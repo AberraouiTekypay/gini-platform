@@ -61,7 +61,7 @@ class RepaymentService {
               await Transaction.create({
                 amount: currentDue.amount,
                 type: 'repayment',
-                status: 'completed',
+                status: 'SETTLED',
                 WalletId: loan.User.Wallet.id,
                 reference: withdrawal.transactionId,
                 providerName: withdrawal.provider,

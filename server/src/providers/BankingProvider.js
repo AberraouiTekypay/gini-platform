@@ -35,6 +35,34 @@ class BankingProvider {
       timestamp: new Date().toISOString()
     };
   }
+
+  /**
+   * Simulates a QR transaction with fee deduction.
+   * @param {string} walletId - Target wallet ID.
+   * @param {number} amount - Gross amount of the transaction.
+   * @returns {Promise<Object>} Transaction details with fee breakdown.
+   */
+  async processQrTransaction(walletId, amount) {
+    const GINI_FEE_PERCENT = 0.015; // 1.5%
+    const PARTNER_FEE_PERCENT = 0.005; // 0.5%
+
+    const giniFee = amount * GINI_FEE_PERCENT;
+    const partnerFee = amount * PARTNER_FEE_PERCENT;
+    const netAmount = amount - giniFee - partnerFee;
+
+    console.log(`[BankingProvider] Processing QR transaction: Gross=${amount}, Net=${netAmount}, GiniFee=${giniFee}, PartnerFee=${partnerFee}`);
+
+    return {
+      success: true,
+      transactionId: `QR-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      provider: 'GiniBank',
+      grossAmount: amount,
+      netAmount: parseFloat(netAmount.toFixed(2)),
+      giniFee: parseFloat(giniFee.toFixed(2)),
+      partnerFee: parseFloat(partnerFee.toFixed(2)),
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 module.exports = new BankingProvider();

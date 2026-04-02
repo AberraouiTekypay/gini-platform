@@ -82,7 +82,7 @@ module.exports = (scoringService) => ({
           await Transaction.create({
             amount: loan.amount,
             type: 'loan',
-            status: 'completed',
+            status: 'SETTLED',
             WalletId: loan.User.Wallet.id,
             reference: disbursement.loanReference,
             providerName: disbursement.providerName,

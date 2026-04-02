@@ -6,7 +6,9 @@ const User = sequelize.define('User', {
   password: { type: DataTypes.STRING },
   role: { type: DataTypes.STRING, defaultValue: 'user' },
   kycStatus: { type: DataTypes.STRING, defaultValue: 'pending' }, // pending, verified, rejected
-  isBlocked: { type: DataTypes.BOOLEAN, defaultValue: false }
+  isBlocked: { type: DataTypes.BOOLEAN, defaultValue: false },
+  dailyLimit: { type: DataTypes.FLOAT, defaultValue: 5000 },
+  monthlyLimit: { type: DataTypes.FLOAT, defaultValue: 50000 }
 });
 
 module.exports = User;

@@ -27,7 +27,7 @@ module.exports = (scoringService) => ({
       const { grade, interestRate, status } = evaluateApplication(user, score);
 
       // 3. Generate Repayment Schedule
-      const schedule = generateRepaymentSchedule(amount, interestRate);
+      const { schedule, breakdown } = generateRepaymentSchedule(amount, interestRate);
 
       // 4. Create Loan Record (status becomes 'pending_signature' if approved)
       const loan = await Loan.create({
@@ -43,10 +43,10 @@ module.exports = (scoringService) => ({
       // 5. Generate Contract if auto-approved
       let contractInfo = null;
       if (loan.status === 'pending_signature') {
-        contractInfo = await SignatureProvider.generateContract(user.id, { amount, grade });
+        contractInfo = await SignatureProvider.generateContract(user.id, { amount, grade, breakdown });
       }
 
-      res.status(201).json({ loan, contractInfo });
+      res.status(201).json({ loan, contractInfo, breakdown });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

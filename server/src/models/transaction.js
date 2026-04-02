@@ -9,7 +9,8 @@ const Transaction = sequelize.define('Transaction', {
   status: { type: DataTypes.STRING }, // pending, completed, failed
   reference: { type: DataTypes.STRING }, // Unique ID for tracking
   providerName: { type: DataTypes.STRING, allowNull: true },
-  providerReference: { type: DataTypes.STRING, allowNull: true }
+  providerReference: { type: DataTypes.STRING, allowNull: true },
+  fraudAlert: { type: DataTypes.BOOLEAN, defaultValue: false }
 });
 
 // Link to Wallet

@@ -18,6 +18,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../AppContext';
 import { useTranslation } from 'react-i18next';
 
+import QrSvg from '../../../assets/QrSvg.svg';
+
 const Dashboard = () => {
   const {t} = useTranslation()
   const {data, updateData} = useAppContext()
@@ -25,12 +27,15 @@ const Dashboard = () => {
   const [coSignature, setCoSignature] = useState(true);
   const [menuActive, setMenuActive] = useState(false);
   const [CardCommand, setCardCommand] = useState(false);
+  const [agentMode, setAgentMode] = useState(false);
 
   const navigation = useNavigation()
 
   const handleActiveMenu = () => {
     setMenuActive(!menuActive);
   };
+
+  const isAgent = data?.signUpInfos?.role === 'ROLE_AGENT' || data?.user?.role === 'ROLE_AGENT';
 
   return (
     <ScrollView
@@ -44,46 +49,49 @@ const Dashboard = () => {
 
         <DashboardHeader onPress={handleActiveMenu} firstName={data?.signUpInfos?.firstName}/>
 
-         {coSignature ? (
-          <TouchableOpacity
-            onPress={() => setCoSignature(false)}
-            className={
-              'flex-row justify-around items-center rounded-full p-1 bg-[#393E41] my-4'
-            }>
-            <AlertSvg />
-            <Text className={'text-white'}>
-            {t('Vous avez une demande de co-signature')}
+        {isAgent && (
+          <TouchableOpacity 
+            onPress={() => setAgentMode(!agentMode)}
+            className={'bg-[#936EE3] py-2 px-4 rounded-lg my-2 self-end'}
+          >
+            <Text className={'text-white font-bold text-xs'}>
+              {agentMode ? t('Mode Client') : t('Mode Agent')}
             </Text>
-            <ArrowRightSvg />
           </TouchableOpacity>
-        ) : null}
+        )}
 
+         {coSignature && !agentMode ? (
+...
         <View className={'flex-1 items-center justify-center '}>
           <Text className={'text-white font-bold text-lg'}>
-            {t('Votre solde est de')}
+            {agentMode ? t('Votre float agent est de') : t('Votre solde est de')}
           </Text>
-          <Text className={'text-white font-bold text-4xl'}>00,00 {env.CURRENCY_CODE}</Text>
+          <Text className={'text-white font-bold text-4xl'}>
+            {agentMode ? (data?.user?.floatBalance || '0,00') : '00,00'} {env.CURRENCY_CODE}
+          </Text>
         </View>
 
-          {!CardCommand ? (
-            <View className={'items-center'}>
-              <Card data={data?.signUpInfos}/>
-              <TouchableOpacity
-                onPress={() => setCardCommand(true)}
-                className={
-                  'flex-row justify-around items-center rounded-full p-2 bg-[#393E41] w-[50%] mt-[-20px] z-20'
-                }>
-                <Text className={'text-white'}>{t('Commander ma carte')}</Text>
-                <LocalizerSvg />
-              </TouchableOpacity>
-            </View>
-          ) : (
+        {agentMode && (
+          <View className={'items-center my-6'}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('QrPayment')}
+              className={'bg-white p-4 rounded-2xl items-center flex-row shadow-lg'}
+            >
+              <QrSvg width={24} height={24} fill="#000" />
+              <Text className={'text-black font-bold ml-2'}>{t('Afficher mon QR Marchand')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+          {!CardCommand && !agentMode ? (
+...
+          ) : !agentMode ? (
             <DashboardCards />
-          )}
+          ) : null}
 
-        <DashboardFirstTab />
+        {!agentMode && <DashboardFirstTab />}
 
-        <ButtonNonRadius buttonText={t('Emprunter maintenant')} onPress={() => navigation.navigate('Refund')}/>
+        {!agentMode && <ButtonNonRadius buttonText={t('Emprunter maintenant')} onPress={() => navigation.navigate('Refund')}/>}
 
         <DashboardBottomTab home={true} wallet={false}/>
       </View>

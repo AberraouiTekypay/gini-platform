@@ -14,6 +14,7 @@ const agentRoutes = require('./routes/agentRoutes');
 const walletRoutes = require('./routes/wallet');
 const partnerRoutes = require('./routes/partnerRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
+const cardRoutes = require('./routes/cardRoutes');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/partner', partnerRoutes);
 app.use('/api/merchant', merchantRoutes);
+app.use('/api/cards', cardRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));

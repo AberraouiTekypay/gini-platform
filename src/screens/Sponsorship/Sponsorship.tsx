@@ -8,10 +8,14 @@ import ShareSvg from '../../../assets/ShareSvg.svg';
 import CopySvg from '../../../assets/CopySvg.svg';
 import DashboardBottomTab from '../../containers/DashboardBottomTab';
 import { useTranslation } from 'react-i18next';
+import { useAppContext } from '../../AppContext';
 
 const Sponsorship = () => {
   const {t} = useTranslation()
+  const {data} = useAppContext()
   const [menuActive, setMenuActive] = useState(false);
+
+  const referralCode = data?.user?.referralCode || 'AXDFKYJR203';
 
   const handleActiveMenu = () => {
     setMenuActive(!menuActive);
@@ -91,7 +95,7 @@ const Sponsorship = () => {
             }>
             <ShareSvg />
           </TouchableOpacity>
-          <Text className={'text-white font-bold text-base'}>AXDFKYJR203</Text>
+          <Text className={'text-white font-bold text-base'}>{referralCode}</Text>
           <TouchableOpacity className={'border-2 border-[#817C7C] flex-row rounded-lg h-10 w-20 items-center justify-around'}>
             <CopySvg />
             <Text className={'text-[#817C7C]'}>{t('Copier')}</Text>

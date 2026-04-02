@@ -5,20 +5,36 @@ import ButtonRadius from '../../components/atoms/ButtonRadius';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import CheckWhite from '../../assets/CheckWhite.svg';
+import { useAppContext } from '../../AppContext';
 
 const FirstTimeLoanContract = () => {
   const {t} = useTranslation()
     const navigation = useNavigation()
+    const {data} = useAppContext()
     const [authorized, setAuthorized] = useState(false)
+
+    const isIslamic = data?.user?.financePreference === 'ISLAMIC';
+
   return (
     <View className={'flex-1 px-4 pt-6'}>
       <ScrollView className={'flex-1'}>
         <LoanFormHeader progress={300} />
         <View className={'mt-6'}>
           <Text className={'text-black font-bold text-2xl'}>
-          {t('Signature de contrat')}
+          {isIslamic ? t('Contrat de Murabaha') : t('Signature de contrat')}
           </Text>
           <Text className={'mt-1 text-[#ccc]'}>{t('Veuillez signer le contrat ci-dessous')}</Text>
+        </View>
+        <View className={'bg-gray-50 p-3 rounded-lg mt-4 border border-gray-100'}>
+          <Text className={'text-black font-bold text-sm'}>
+            {isIslamic ? t('Marge de Profit Fixe (Profit Margin)') : t('Taux d’intérêt (Interest Rate)')}
+          </Text>
+          <Text className={'text-black mt-2 text-xs'}>
+            {isIslamic 
+              ? t('En signant ce contrat de Murabaha, vous acceptez d\'acheter l\'actif avec une marge de profit fixe convenue à l\'avance.')
+              : t('En signant ce contrat, vous acceptez les conditions de prêt et le taux d’intérêt annuel mentionné.')
+            }
+          </Text>
         </View>
         <Text className={'text-black mt-4'}>
           Lorem ipsum dolor sit amet, consectetur adipiscing{'\n'} elit, sed do

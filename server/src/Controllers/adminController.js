@@ -264,6 +264,78 @@ const adminController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  /**
+   * Support Hub: Search Users
+   */
+  searchUsers: async (req, res) => {
+    const { q } = req.query;
+    const { Op } = require('sequelize');
+    try {
+      const users = await User.findAll({
+        where: {
+          [Op.or]: [
+            { email: { [Op.iLike]: `%${q}%` } },
+            { id: isNaN(q) ? -1 : parseInt(q) }
+          ]
+        },
+        attributes: ['id', 'email', 'kycStatus', 'isBlocked', 'role', 'floatBalance'],
+        limit: 10
+      });
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  /**
+   * Support Hub: Manual KYC Override
+   */
+  manualKycOverride: async (req, res) => {
+    const { userId, adminNotes } = req.body;
+    try {
+      const user = await User.findByPk(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      user.kycStatus = 'verified';
+      user.isBlocked = false;
+      await user.save();
+
+      await AuditLog.create({
+        action: 'MANUAL_KYC_VERIFY',
+        entityType: 'User',
+        entityId: user.id,
+        adminId: req.user ? req.user.id : 1,
+        details: { adminNotes }
+      });
+
+      res.json({ message: 'User manually verified successfully.' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  /**
+   * Support Hub: User Activity Timeline
+   */
+  getUserTimeline: async (req, res) => {
+    const { id } = req.params;
+    const Transaction = require('../models/transaction');
+    try {
+      const wallet = await Wallet.findOne({ where: { UserId: id } });
+      const transactions = wallet ? await Transaction.findAll({ where: { WalletId: wallet.id }, order: [['createdAt', 'DESC']] }) : [];
+      const logs = await AuditLog.findAll({ where: { entityId: id }, order: [['createdAt', 'DESC']] });
+      
+      const timeline = [
+        ...transactions.map(t => ({ date: t.createdAt, event: `${t.type.toUpperCase()} - ${t.amount} MAD`, status: t.status })),
+        ...logs.map(l => ({ date: l.timestamp, event: l.action, status: 'AUDITED' }))
+      ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      res.json(timeline);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 

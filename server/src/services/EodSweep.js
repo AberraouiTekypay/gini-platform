@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Transaction = require('../models/transaction');
 const Wallet = require('../models/wallet');
 const User = require('../models/user');
+const TreasuryService = require('./TreasuryService');
 
 class EodSweepService {
   async sweepGiniFees() {
@@ -22,12 +23,8 @@ class EodSweepService {
         }
       });
 
-      // Calculate total fees (Gini slice is 0.5% while agent gets 1%, but for simplicity, let's say Gini takes a defined cut or we find specific GINI_FEE transactions)
-      // Since we didn't store Gini fee directly as a transaction, let's say we sweep a known value or we sweep Agent commissions to a corporate account (Wait, commissions went to the agent float).
-      // Let's instead log the sweep and simulate transferring Gini's 0.5% cut from a central reserve to a revenue account.
       let totalGiniRevenue = 0;
       for (const fee of fees) {
-        // Reverse math: Agent got 1% (amount). Gross was amount * 100. Gini fee is Gross * 0.005 = amount * 0.5.
         const giniFee = fee.amount * 0.5;
         totalGiniRevenue += giniFee;
       }
@@ -38,6 +35,12 @@ class EodSweepService {
       } else {
         console.log('[EOD Sweep] No fees to sweep today.');
       }
+
+      // Generate Settlement File
+      await TreasuryService.generateNapsSettlementFile();
+      
+      // Perform Liquidity Check
+      await TreasuryService.checkLiquidity();
     } catch (err) {
       console.error('[EOD Sweep] Error during sweep:', err);
     }

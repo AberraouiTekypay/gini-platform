@@ -16,8 +16,8 @@
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-tight">Gini <span class="text-indigo-300">Admin</span></h1>
             <div class="flex items-center space-x-4">
-                <span class="text-xs font-mono bg-indigo-800 px-2 py-1 rounded">V1.0.0</span>
-                <button onclick="fetchLoans()" class="bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded text-sm transition">Refresh</button>
+                <span class="text-xs font-mono bg-indigo-800 px-2 py-1 rounded">V1.0.0-PRO</span>
+                <button onclick="window.location.reload()" class="bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded text-sm transition">Refresh</button>
             </div>
         </div>
     </nav>
@@ -26,8 +26,10 @@
         <div class="flex space-x-4 mb-8 border-b border-gray-200">
             <button id="tab-loans" onclick="showSection('loans')" class="pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition">Loans</button>
             <button id="tab-partners" onclick="showSection('partners')" class="pb-2 px-4 text-gray-500 hover:text-indigo-900 transition">Partner Management</button>
+            <button id="tab-support" onclick="showSection('support')" class="pb-2 px-4 text-gray-500 hover:text-indigo-900 transition">Support Hub</button>
         </div>
 
+        <!-- Loans Section -->
         <div id="loans-section">
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold text-indigo-900">Pending Loan Approvals</h2>
@@ -40,20 +42,19 @@
                         <tr>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">User</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Amount</th>
-                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Credo Score</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Suggested Grade</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Date Applied</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="loan-table-body" class="divide-y divide-gray-100">
-                        <!-- Data injected here -->
-                        <tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">Loading applications...</td></tr>
+                        <tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic">Loading applications...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- Partners Section -->
         <div id="partners-section" class="hidden">
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold text-indigo-900">Financial Partners</h2>
@@ -70,9 +71,43 @@
                         </tr>
                     </thead>
                     <tbody id="partner-table-body" class="divide-y divide-gray-100">
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Loading partners...</td></tr>
+                        <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Partners will be listed here.</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Support Hub Section -->
+        <div id="support-section" class="hidden">
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-indigo-900">Support Hub</h2>
+                <p class="text-gray-500 text-sm">Search users, view activity timelines, and perform manual KYC overrides.</p>
+            </div>
+            
+            <div class="flex space-x-2 mb-6">
+                <input type="text" id="user-search-query" placeholder="Search by Email or User ID..." class="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button onclick="searchUsers()" class="bg-indigo-900 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md hover:bg-indigo-800 transition">Search</button>
+            </div>
+
+            <div id="search-results" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8 hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">User ID</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Email</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">KYC Status</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-results-body" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+
+            <div id="user-timeline-container" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
+                <h3 class="text-lg font-bold text-indigo-900 mb-4">Activity Timeline: <span id="timeline-user-email" class="text-gray-500 font-normal"></span></h3>
+                <div id="user-timeline-list" class="space-y-4 border-l-2 border-indigo-100 ml-2 pl-6">
+                    <!-- Timeline items injected here -->
+                </div>
             </div>
         </div>
     </main>
@@ -89,100 +124,144 @@
         function showSection(section) {
             document.getElementById('loans-section').classList.toggle('hidden', section !== 'loans');
             document.getElementById('partners-section').classList.toggle('hidden', section !== 'partners');
+            document.getElementById('support-section').classList.toggle('hidden', section !== 'support');
             
-            const tabLoans = document.getElementById('tab-loans');
-            const tabPartners = document.getElementById('tab-partners');
-            
-            if (section === 'loans') {
-                tabLoans.className = 'pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition';
-                tabPartners.className = 'pb-2 px-4 text-gray-500 hover:text-indigo-900 transition';
-                fetchLoans();
-            } else {
-                tabPartners.className = 'pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition';
-                tabLoans.className = 'pb-2 px-4 text-gray-500 hover:text-indigo-900 transition';
-                // fetchPartners(); // Mocked
-            }
+            const tabs = ['loans', 'partners', 'support'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (section === t) {
+                    el.className = 'pb-2 px-4 text-indigo-900 font-bold border-b-2 border-indigo-900 transition';
+                } else {
+                    el.className = 'pb-2 px-4 text-gray-500 hover:text-indigo-900 transition';
+                }
+            });
+
+            if (section === 'loans') fetchLoans();
         }
 
         async function fetchLoans() {
             const tableBody = document.getElementById('loan-table-body');
             try {
                 const res = await fetch(`${API_URL}/loans`, {
-                    headers: { 'AdminToken': ADMIN_TOKEN, 'Authorization': 'Bearer YOUR_TOKEN' } // Note: Fixed header
+                    headers: { 'AdminToken': ADMIN_TOKEN }
                 });
                 const loans = await res.json();
                 
                 if (loans.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">No pending applications found.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic">No pending applications found.</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = loans.map(loan => `
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4">
-                            <div class="text-sm font-semibold text-gray-900">${loan.User.firstName} ${loan.User.lastName}</div>
-                            <div class="text-xs text-gray-500">${loan.User.email}</div>
+                            <div class="text-sm font-semibold text-gray-900">${loan.User.email}</div>
                         </td>
                         <td class="px-6 py-4">
                             <span class="text-sm font-mono font-bold text-indigo-700">${loan.amount} DH</span>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">712 (Mock)</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${loan.creditGrade === 'A' ? 'bg-green-100 text-green-700' : loan.creditGrade === 'B' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}">
-                                ${loan.creditGrade || 'N/A'}
-                            </span>
+                            <span class="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-700">${loan.creditGrade || 'N/A'}</span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             ${new Date(loan.createdAt).toLocaleDateString()}
                         </td>
                         <td class="px-6 py-4 space-x-2">
-                            <button onclick="reviewLoan(${loan.id}, 'approved')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm">Approve</button>
-                            <button onclick="reviewLoan(${loan.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm">Reject</button>
+                            <button onclick="reviewLoan(${loan.id}, 'approved')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold transition">Approve</button>
+                            <button onclick="reviewLoan(${loan.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold transition">Reject</button>
                         </td>
                     </tr>
                 `).join('');
             } catch (err) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-red-500 italic">Error fetching data. Ensure the server is running.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 italic">Error fetching loans.</td></tr>';
+            }
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('user-search-query').value;
+            if (!query) return;
+
+            try {
+                const res = await fetch(`${API_URL}/users/search?q=${query}`, {
+                    headers: { 'AdminToken': ADMIN_TOKEN }
+                });
+                const users = await res.json();
+                
+                const container = document.getElementById('search-results');
+                const body = document.getElementById('user-results-body');
+                container.classList.remove('hidden');
+
+                body.innerHTML = users.map(user => `
+                    <tr>
+                        <td class="px-6 py-4 text-sm font-mono">${user.id}</td>
+                        <td class="px-6 py-4 text-sm">${user.email}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${user.kycStatus === 'verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${user.kycStatus}</span>
+                        </td>
+                        <td class="px-6 py-4 space-x-2">
+                            <button onclick="viewTimeline(${user.id}, '${user.email}')" class="text-indigo-600 hover:underline text-xs font-bold">Timeline</button>
+                            ${user.kycStatus !== 'verified' ? `<button onclick="manualVerify(${user.id})" class="text-green-600 hover:underline text-xs font-bold">Manual Verify</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                alert('Search failed.');
+            }
+        }
+
+        async function viewTimeline(userId, email) {
+            try {
+                const res = await fetch(`${API_URL}/users/${userId}/timeline`, {
+                    headers: { 'AdminToken': ADMIN_TOKEN }
+                });
+                const timeline = await res.json();
+                
+                document.getElementById('user-timeline-container').classList.remove('hidden');
+                document.getElementById('timeline-user-email').innerText = email;
+                
+                const list = document.getElementById('user-timeline-list');
+                list.innerHTML = timeline.map(item => `
+                    <div class="relative">
+                        <div class="absolute -left-[31px] mt-1.5 w-3 h-3 rounded-full bg-indigo-500 border-2 border-white"></div>
+                        <div class="text-xs text-gray-400">${new Date(item.date).toLocaleString()}</div>
+                        <div class="text-sm font-semibold text-gray-800">${item.event}</div>
+                        <div class="text-[10px] uppercase font-bold text-gray-500">${item.status}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                alert('Timeline fetch failed.');
+            }
+        }
+
+        async function manualVerify(userId) {
+            const adminNotes = prompt('Enter reason for manual verification:');
+            if (!adminNotes) return;
+
+            try {
+                const res = await fetch(`${API_URL}/users/manual-verify`, {
+                    method: 'POST',
+                    headers: { 'AdminToken': ADMIN_TOKEN, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, adminNotes })
+                });
+                const result = await res.json();
+                alert(result.message);
+                searchUsers();
+            } catch (err) {
+                alert('Verification failed.');
             }
         }
 
         async function reviewLoan(loanId, status) {
-            const adminNotes = prompt(`Enter optional review notes for ${status}:`);
+            const adminNotes = prompt(`Notes for ${status}:`);
             try {
-                const res = await fetch(`${API_URL}/loan/review`, {
+                await fetch(`${API_URL}/loan/review`, {
                     method: 'POST',
-                    headers: { 
-                        'AdminToken': ADMIN_TOKEN,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'AdminToken': ADMIN_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ loanId, status, adminNotes, reviewerId: 1 })
                 });
-                const result = await res.json();
-                alert(result.message);
                 fetchLoans();
             } catch (err) {
                 alert('Action failed.');
-            }
-        }
-
-        async function disputeTransaction(transactionId) {
-            const adminNotes = prompt(`Enter reason for dispute/reversal:`);
-            if (!adminNotes) return;
-            try {
-                const res = await fetch(`${API_URL}/transaction/reverse`, {
-                    method: 'POST',
-                    headers: { 
-                        'AdminToken': ADMIN_TOKEN,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ transactionId, adminNotes })
-                });
-                const result = await res.json();
-                alert(result.message || result.error);
-            } catch (err) {
-                alert('Dispute failed.');
             }
         }
 

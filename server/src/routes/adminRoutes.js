@@ -30,4 +30,9 @@ router.post('/action/approve', adminAuth, checkRole(['SUPER_ADMIN']), adminContr
 // Financial Observability
 router.get('/trial-balance', adminAuth, adminController.getTrialBalance);
 
+// Support Hub
+router.get('/users/search', adminAuth, adminController.searchUsers);
+router.post('/users/manual-verify', adminAuth, checkRole(['SUPER_ADMIN']), adminController.manualKycOverride);
+router.get('/users/:id/timeline', adminAuth, adminController.getUserTimeline);
+
 module.exports = router;

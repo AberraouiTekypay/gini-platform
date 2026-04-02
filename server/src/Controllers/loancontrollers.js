@@ -3,10 +3,12 @@ const Repayment = require('../models/repayment');
 const User = require('../models/user');
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
+const { evaluateApplication } = require('../services/LoanEngine');
+const { generateRepaymentSchedule } = require('../utils/finance');
+const LoanProvider = require('../providers/LoanProvider');
 
 /**
  * Factory that creates loan controller functions with dependency injection.
- * @param {Object} scoringService - service with a `calculateScore` method
  */
 module.exports = (scoringService) => ({
   /**
@@ -17,26 +19,46 @@ module.exports = (scoringService) => ({
     try {
       const user = await User.findByPk(req.user.id, { include: Wallet });
 
-      const eligible = await scoringService.calculateScore(user);
-      if (!eligible) {
-        return res.status(400).json({ error: 'Loan denied' });
-      }
+      // 1. Get score from scoringService
+      const score = await scoringService.calculateScore(user);
 
+      // 2. Evaluate with LoanEngine
+      const { grade, interestRate, status } = evaluateApplication(user, score);
+
+      // 3. Generate Repayment Schedule
+      const schedule = generateRepaymentSchedule(amount, interestRate);
+
+      // 4. Create Loan Record
       const loan = await Loan.create({
         amount,
         UserId: user.id,
-        status: 'approved'
+        status: status,
+        creditGrade: grade,
+        interestRate: interestRate,
+        repaymentSchedule: schedule,
       });
 
-      if (user.Wallet) {
-        await Wallet.increment('balance', { by: amount, where: { UserId: user.id } });
-        
-        await Transaction.create({
-          amount,
-          type: 'loan',
-          status: 'completed',
-          WalletId: user.Wallet.id
+      // 5. If auto-approved, disburse via Provider
+      if (status === 'approved' && user.Wallet) {
+        const disbursement = await LoanProvider.disburseLoan({
+          walletId: user.Wallet.id,
+          amount: amount,
+          loanId: loan.id
         });
+
+        if (disbursement.success) {
+          await Wallet.increment('balance', { by: amount, where: { UserId: user.id } });
+          
+          await Transaction.create({
+            amount,
+            type: 'loan',
+            status: 'completed',
+            WalletId: user.Wallet.id,
+            reference: disbursement.loanReference,
+            providerName: disbursement.providerName,
+            providerReference: disbursement.providerReference
+          });
+        }
       }
 
       res.status(201).json(loan);

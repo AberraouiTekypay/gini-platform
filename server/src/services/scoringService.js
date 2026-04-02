@@ -11,11 +11,11 @@ const someThirdPartyScoringAPI = async (email) => {
 /**
  * Calculate a user's credit score.
  * @param {Object} user - Sequelize user instance
- * @returns {Promise<boolean>} whether the user passes the scoring threshold
+ * @returns {Promise<number>} the user's credit score
  */
 const calculateScore = async (user) => {
   const score = await someThirdPartyScoringAPI(user.email);
-  return score > 650; // Example threshold
+  return score;
 };
 
 module.exports = { calculateScore };

@@ -7,8 +7,13 @@ jest.mock('../src/models/loan', () => ({
 jest.mock('../src/models/repayment', () => ({}));
 jest.mock('../src/models/user', () => ({}));
 
-const loanController = require('../src/Controllers/loancontrollers');
-const Loan = require('../src/models/loan');
+const createLoanController = require('../src/Controllers/loancontrollers');
+const Loan = require('../models/loan');
+
+const mockScoringService = {
+  calculateScore: jest.fn()
+};
+const loanController = createLoanController(mockScoringService);
 
 process.env.JWT_SECRET = 'testsecret';
 
@@ -22,20 +27,33 @@ function mockResponse() {
 describe('loan controllers', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('applyLoan creates loan and returns 201', async () => {
-    const req = { body: { amount: 100, dueDate: '2024-01-01' }, user: { id: 1 } };
+  test('applyLoan creates loan with grade and returns 201', async () => {
+    const req = { body: { amount: 1000 }, user: { id: 1 } };
     const res = mockResponse();
     const createdLoan = { id: 1 };
+
+    // Mock User and Wallet
+    const User = require('../src/models/user');
+    const Wallet = require('../src/models/wallet');
+    User.findByPk = jest.fn().mockResolvedValue({ id: 1, Wallet: { id: 1, balance: 0 } });
+
+    // Mock Scoring Service to return 750 (Grade A)
+    mockScoringService.calculateScore.mockResolvedValue(750);
+
     Loan.create.mockResolvedValue(createdLoan);
+    Wallet.increment = jest.fn().mockResolvedValue([1]);
+    const Transaction = require('../src/models/transaction');
+    Transaction.create = jest.fn().mockResolvedValue({});
 
     await loanController.applyLoan(req, res);
 
-    expect(Loan.create).toHaveBeenCalledWith({
-      amount: 100,
-      dueDate: '2024-01-01',
+    expect(Loan.create).toHaveBeenCalledWith(expect.objectContaining({
+      amount: 1000,
       UserId: 1,
-      status: 'pending'
-    });
+      status: 'approved',
+      creditGrade: 'A',
+      interestRate: 0.05
+    }));
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(createdLoan);
   });

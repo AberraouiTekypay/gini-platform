@@ -1,4 +1,8 @@
 // src/models/Card.js
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('./index');
+const Wallet = require('./wallet');
+
 const Card = sequelize.define('Card', {
   cardNumber: { type: DataTypes.STRING }, // Encrypted field
   expiry: { type: DataTypes.STRING },
@@ -9,3 +13,5 @@ const Card = sequelize.define('Card', {
 // Link to Wallet
 Wallet.hasMany(Card);
 Card.belongsTo(Wallet);
+
+module.exports = Card;

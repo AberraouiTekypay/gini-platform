@@ -9,6 +9,9 @@ const Loan = sequelize.define('Loan', {
     type: DataTypes.ENUM('pending', 'approved', 'rejected', 'repaid'), 
     defaultValue: 'pending' 
   },
+  creditGrade: { type: DataTypes.STRING, allowNull: true },
+  interestRate: { type: DataTypes.FLOAT, allowNull: true },
+  repaymentSchedule: { type: DataTypes.JSON, allowNull: true },
   dueDate: { type: DataTypes.DATE, allowNull: true },
   repaid: { type: DataTypes.BOOLEAN, defaultValue: false },
   reviewedBy: { type: DataTypes.INTEGER, allowNull: true },

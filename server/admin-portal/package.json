@@ -1,0 +1,12 @@
+{
+  "name": "gini-admin-portal",
+  "version": "1.0.0",
+  "description": "Back-office operations portal for Gini microfinance",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 --cors"
+  },
+  "keywords": [],
+  "author": "Gini Team",
+  "license": "ISC"
+}

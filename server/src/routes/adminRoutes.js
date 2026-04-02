@@ -3,16 +3,16 @@ const router = express.Router();
 const adminController = require('../Controllers/adminController');
 const adminAuth = require('../middlewares/adminAuth');
 
-// All routes require admin key authentication
+// All routes require 'AdminToken' header authentication
 router.use(adminAuth);
 
-// Fetch all pending loans
-router.get('/loans', adminController.getPendingLoans);
+// Fetch all pending loans for the dashboard table
+router.get('/loans', adminController.getAllPendingLoans);
 
-// Review a loan (approve or reject)
-router.post('/loan/review', adminController.reviewLoan);
+// Update status to approved or rejected (ID in body)
+router.post('/loan/review', adminController.updateLoanStatus);
 
-// Get user overview with scoring/KYC summary
-router.get('/user/:id', adminController.getUserOverview);
+// Get user risk/CredoLab profile
+router.get('/user/:id/risk', adminController.getUserRiskProfile);
 
 module.exports = router;

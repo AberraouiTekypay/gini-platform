@@ -1,16 +1,16 @@
 /**
- * Admin Authentication Middleware
- * Validates the presence and value of the x-admin-key header.
+ * Admin Authentication Middleware (AdminToken)
+ * Validates the presence and value of the 'AdminToken' header for operations.
  */
-const adminAuth = (req, res, next) => {
-  const adminKey = req.headers['x-admin-key'];
-  const expectedKey = process.env.ADMIN_SECRET_KEY || 'default-admin-secret';
+const AdminToken = (req, res, next) => {
+  const adminToken = req.headers['admintoken']; // Case insensitive header lookup in Express
+  const expectedToken = process.env.ADMIN_SECRET_KEY || 'default-admin-secret';
 
-  if (!adminKey || adminKey !== expectedKey) {
-    return res.status(403).json({ error: 'Access Denied: Invalid Admin Key' });
+  if (!adminToken || adminToken !== expectedToken) {
+    return res.status(403).json({ error: 'Access Denied: Invalid AdminToken.' });
   }
 
   next();
 };
 
-module.exports = adminAuth;
+module.exports = AdminToken;

@@ -4,17 +4,20 @@ const Wallet = require('../models/wallet');
 
 /**
  * Admin Controller
- * Handles backend operations for administrative users.
+ * Handles backend operations for Gini back-office administrators.
  */
 const adminController = {
   /**
-   * Fetch all pending loans.
+   * Fetch all pending loans for the dashboard.
    */
-  getPendingLoans: async (req, res) => {
+  getAllPendingLoans: async (req, res) => {
     try {
       const pendingLoans = await Loan.findAll({
         where: { status: 'pending' },
-        include: { model: User, attributes: ['id', 'email', 'firstName', 'lastName'] }
+        include: { 
+          model: User, 
+          attributes: ['id', 'email', 'firstName', 'lastName'] 
+        }
       });
       res.json(pendingLoans);
     } catch (err) {
@@ -23,65 +26,68 @@ const adminController = {
   },
 
   /**
-   * Approve or reject a loan based on ID.
+   * Update status to approved or rejected with admin notes.
    */
-  reviewLoan: async (req, res) => {
-    const { loanId, status, reviewerId } = req.body; // status should be 'approved' or 'rejected'
+  updateLoanStatus: async (req, res) => {
+    const { loanId, status, adminNotes, reviewerId } = req.body;
+    
     if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status provided' });
+      return res.status(400).json({ error: 'Status must be approved or rejected.' });
     }
 
     try {
-      const loan = await Loan.findByPk(loanId);
+      const loan = await Loan.findByPk(loanId, { include: User });
       if (!loan) {
-        return res.status(404).json({ error: 'Loan not found' });
+        return res.status(404).json({ error: 'Loan entry not found.' });
       }
 
       loan.status = status;
+      loan.adminNotes = adminNotes;
       loan.reviewedBy = reviewerId;
-      loan.reviewDate = new Date();
+      loan.reviewedAt = new Date();
       await loan.save();
 
-      res.json({ message: `Loan ${status} successfully`, loan });
+      // Logic for wallet incrementing if approved
+      if (status === 'approved' && loan.User) {
+        const wallet = await Wallet.findOne({ where: { UserId: loan.User.id } });
+        if (wallet) {
+          await wallet.increment('balance', { by: loan.amount });
+        }
+      }
+
+      res.json({ message: `Loan successfully ${status}.`, loan });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   },
 
   /**
-   * Get a summary of user information including CredoLab scores and KYC basics.
+   * Retrieve risk profile data from CredoLab logic.
    */
-  getUserOverview: async (req, res) => {
+  getUserRiskProfile: async (req, res) => {
     const { id } = req.params;
     try {
-      const user = await User.findByPk(id, {
-        include: [{ model: Wallet }, { model: Loan }]
-      });
-
+      const user = await User.findByPk(id);
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: 'User not found.' });
       }
 
-      // Placeholder for actual CredoLab/KYC data lookup
-      const userOverview = {
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          createdAt: user.createdAt
-        },
-        wallet: user.Wallet,
-        loans: user.Loans,
-        credoLabData: {
-          score: 720, // Placeholder
-          riskLevel: 'Low',
-          lastScanned: new Date()
-        },
-        kycStatus: 'Verified' // Placeholder
+      // Simulated CredoLab Risk Logic
+      const riskProfile = {
+        userId: user.id,
+        fullName: `${user.firstName} ${user.lastName}`,
+        credoScore: 685, // Mock score from SDK collection
+        riskLevel: 'Moderate',
+        behavioralInsights: [
+          'High device battery stability',
+          'Consistent social connectivity',
+          'No historical gambling application usage'
+        ],
+        kycStatus: 'Verified',
+        lastAudit: new Date()
       };
 
-      res.json(userOverview);
+      res.json(riskProfile);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

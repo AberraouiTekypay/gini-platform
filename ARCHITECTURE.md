@@ -18,5 +18,12 @@ Real-time merchant payments are handled via a multi-step verification stack.
 The project was recently consolidated from its previous separate repositories into this unified monorepo structure.
 - **Migration Logic**: Features were surgically ported to a strict TypeScript environment.
 - **Archive Policy**: Legacy folders are now consolidated into the main root-level structure.
+
+## 🛠 Admin & Operations Workflow
+Back-office operations are managed via the **Gini Admin Portal**, which interfaces with the administrative backend API.
+- **Flow**: Pending Loan Entry -> Admin Portal Dashboard -> CredoLab Risk Review -> Approval/Rejection Action.
+- **Security**: Admin routes are protected by the `AdminToken` middleware, requiring an authorized secret key for all state-changing operations.
+- **Audit**: All administrative actions (status updates, notes) are persisted with the reviewer's ID and timestamp in the PostgreSQL ledger.
+
 ## 🔐 Security Layer
 All sensitive operations (PIN entry, Card display) are wrapped in specialized animated containers that require fresh biometric/PIN validation before revealing PII.

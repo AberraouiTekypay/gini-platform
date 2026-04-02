@@ -5,11 +5,15 @@ const User = require('./user');
 
 const Loan = sequelize.define('Loan', {
   amount: { type: DataTypes.FLOAT, allowNull: false },
-  status: { type: DataTypes.STRING, defaultValue: 'pending' }, // pending, approved, rejected, repaid
-  dueDate: { type: DataTypes.DATE, allowNull: true }, // Changed to true as it might not be set during initial application
+  status: { 
+    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'repaid'), 
+    defaultValue: 'pending' 
+  },
+  dueDate: { type: DataTypes.DATE, allowNull: true },
   repaid: { type: DataTypes.BOOLEAN, defaultValue: false },
   reviewedBy: { type: DataTypes.INTEGER, allowNull: true },
-  reviewDate: { type: DataTypes.DATE, allowNull: true }
+  reviewedAt: { type: DataTypes.DATE, allowNull: true },
+  adminNotes: { type: DataTypes.TEXT, allowNull: true }
 });
 
 Loan.belongsTo(User);

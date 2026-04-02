@@ -251,6 +251,19 @@ const adminController = {
       await t.rollback();
       res.status(400).json({ error: err.message });
     }
+  },
+
+  /**
+   * Financial Observability: Trial Balance
+   */
+  getTrialBalance: async (req, res) => {
+    const ReconService = require('../services/ReconService');
+    try {
+      const report = await ReconService.generateTrialBalanceReport();
+      res.json(report);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 

@@ -27,4 +27,7 @@ router.post('/transaction/reverse', adminAuth, checkRole(['CREDIT_OFFICER', 'ADM
 // Approve a pending action
 router.post('/action/approve', adminAuth, checkRole(['SUPER_ADMIN']), adminController.approvePendingAction);
 
+// Financial Observability
+router.get('/trial-balance', adminAuth, adminController.getTrialBalance);
+
 module.exports = router;

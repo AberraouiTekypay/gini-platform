@@ -14,7 +14,9 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('CONVENTIONAL', 'ISLAMIC'), 
     defaultValue: 'CONVENTIONAL' 
   },
-  PartnerId: { type: DataTypes.INTEGER, allowNull: true }
+  PartnerId: { type: DataTypes.INTEGER, allowNull: true },
+  referredBy: { type: DataTypes.INTEGER, allowNull: true },
+  referralCode: { type: DataTypes.STRING, unique: true }
 });
 
 const Partner = require('./Partner');

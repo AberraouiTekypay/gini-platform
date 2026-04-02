@@ -4,7 +4,12 @@
  */
 const AdminToken = (req, res, next) => {
   const adminToken = req.headers['admintoken']; // Case insensitive header lookup in Express
-  const expectedToken = process.env.ADMIN_SECRET_KEY || 'default-admin-secret';
+  const expectedToken = process.env.ADMIN_SECRET_KEY;
+
+  if (!expectedToken) {
+    console.error('CRITICAL: ADMIN_SECRET_KEY is not set in environment variables.');
+    return res.status(500).json({ error: 'Server configuration error.' });
+  }
 
   if (!adminToken || adminToken !== expectedToken) {
     return res.status(403).json({ error: 'Access Denied: Invalid AdminToken.' });

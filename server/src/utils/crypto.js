@@ -1,7 +1,11 @@
 const crypto = require('crypto');
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env.PII_ENCRYPTION_KEY || 'default_pii_key_32_chars_long_!!!'; // Must be 32 bytes
+const ENCRYPTION_KEY = process.env.PII_ENCRYPTION_KEY; // Must be 32 bytes from environment
+
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
+  throw new Error('PII_ENCRYPTION_KEY must be a 32-character string set in environment variables.');
+}
 const IV_LENGTH = 16;
 
 /**

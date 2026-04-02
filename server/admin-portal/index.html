@@ -79,7 +79,12 @@
 
     <script>
         const API_URL = 'http://localhost:5000/api/admin';
-        const ADMIN_TOKEN = 'default-admin-secret'; 
+        let ADMIN_TOKEN = localStorage.getItem('GiniAdminToken');
+
+        if (!ADMIN_TOKEN) {
+            ADMIN_TOKEN = prompt('Please enter your Admin Secret Key:');
+            if (ADMIN_TOKEN) localStorage.setItem('GiniAdminToken', ADMIN_TOKEN);
+        }
 
         function showSection(section) {
             document.getElementById('loans-section').classList.toggle('hidden', section !== 'loans');

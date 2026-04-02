@@ -3,7 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default_secret_key_32_characters_!!'; // Must be 32 bytes
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY; // Must be 32 bytes from environment
+
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
+  throw new Error('ENCRYPTION_KEY must be a 32-character string set in environment variables.');
+}
 const IV_LENGTH = 16;
 
 /**

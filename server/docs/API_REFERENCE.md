@@ -76,17 +76,7 @@ All endpoints are prefixed with `/api`. Authenticated requests require the `Auth
 ```
 
 ## 🛠 Admin (`/admin`)
-Requires `AdminToken` header.
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/loans` | Fetch all pending loan applications for review. |
-| POST | `/loan/review` | Approve or reject a loan application. |
-| GET | `/user/:id/risk` | Retrieve detailed CredoLab risk profile for a user. |
-
-**Headers:**
-- `admintoken`: Your authorized admin secret key.
-- `Authorization`: Bearer `<admin_user_token>`.
-
+...
 **Payload Sample (`/loan/review`):**
 ```json
 {
@@ -96,3 +86,34 @@ Requires `AdminToken` header.
   "reviewerId": 99
 }
 ```
+
+---
+
+# 🤝 Partner API Standard (`/partner`)
+
+External Banks and Participative MFIs connect to Gini via this interface. All requests require `Partner-API-Key`.
+
+## 🔄 Lifecycle Webhooks
+Partners should implement a listener for Gini's `webhookUrl` to receive application alerts.
+
+### 1. Confirm Disbursement
+**POST** `/api/partner/v1/disbursement-confirm`
+
+Called by the Bank's core banking system to confirm funds have been moved to the Gini transit account.
+
+**Headers:**
+- `Partner-API-Key`: `<your_assigned_key>`
+
+**Payload:**
+```json
+{
+  "loanId": 105,
+  "providerReference": "CB-TX-998234",
+  "status": "SUCCESS"
+}
+```
+
+### 2. Reconciliation Pulse
+**GET** `/api/partner/v1/recon` (Planned)
+Returns a list of all `SETTLED` transactions for the current billing cycle.
+

@@ -18,4 +18,7 @@ router.post('/loan/review', adminAuth, checkRole(['CREDIT_OFFICER', 'ADMIN']), a
 // Get user risk/CredoLab profile
 router.get('/user/:id/risk', adminAuth, adminController.getUserRiskProfile);
 
+// System Health Pulse
+router.get('/health', adminAuth, adminController.getSystemHealth);
+
 module.exports = router;

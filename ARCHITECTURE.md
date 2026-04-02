@@ -45,15 +45,19 @@ The loan lifecycle is driven by the **CredoLab behavioral engine** and internal 
     - **Repayment**: Monthly installments calculated on total cost.
 
 ## 👥 Agent CICO Network (Cash-In/Cash-Out)
-Gini utilizes a decentralized agent network to bridge the gap between digital and physical cash.
-
-- **Agent Role**: Users with `ROLE_AGENT` manage a `floatBalance` (digital liquidity).
-- **Cash-In Flow**: Agent transfers float to Customer wallet in exchange for physical cash. Secured by a 2FA OTP sent to the Customer's WhatsApp.
-- **Cash-Out Flow**: Customer scans Agent's Merchant QR to transfer digital funds; Agent provides physical cash.
-- **Commission Engine**:
-    - **Agent Commission**: 1% of the transaction amount.
-    - **Gini Fee**: 0.5% of the transaction amount.
+...
     - Recorded in the ledger with `type: 'COMMISSION'`.
 
+## 🔄 End-to-End Loan Flow (Technical)
+1. **Consent & Data**: User grants permissions in Mobile app -> `useCredoPermissions` collects behavioral metadata.
+2. **Scoring**: Backend calls `scoringService` (CredoLab) -> `LoanEngine` assigns Grade (A/B/Manual).
+3. **Tenant Routing**: `LoanEngine.routeToPartner()` selects a funding partner based on `financePreference`.
+4. **Contracting**: `SignatureProvider` (Damanesign) generates a legally binding agreement.
+5. **Approval**: If automatic, loan moves to `pending_signature`. If manual, it waits for a `CREDIT_OFFICER` in the Admin Portal.
+6. **Disbursement**: Partner Bank calls `/api/partner/v1/disbursement-confirm` -> Funds added to Gini Wallet.
+
 ## 🔐 Security & Audit Layer
-... (rest of the content)
+- **PII Encryption**: AES-256-CBC used for `NationalID`, `Phone`, and `BankDetails` at rest.
+- **Audit Ledger**: `AuditLog` table tracks all administrative actions for regulatory compliance.
+- **Idempotency**: Prevent double-spending via `idempotency-key` header on critical state-changing routes.
+

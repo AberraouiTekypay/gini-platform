@@ -30,7 +30,6 @@ import {useAppContext} from '../../AppContext';
 
 // TODO: Move this to a proper auth service
 const login = async (values: any) => {
-  console.log('Login attempt with:', values);
   return Promise.resolve();
 };
 

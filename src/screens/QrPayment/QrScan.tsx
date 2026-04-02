@@ -11,8 +11,6 @@ const QrScan = () => {
 
   const handleBarCodeScanned = ({type, data}: {type: string, data: string}) => {
     // Handle the scanned QR code data here
-    console.log(`Scanned QR Code Type: ${type}`);
-    console.log(`Scanned QR Code Data: ${data}`);
     if (type === 'QR_CODE' || type === 'org.iso.QRCode')
         navigation.navigate('QrPayment')
   };

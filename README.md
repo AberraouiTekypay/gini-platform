@@ -1,24 +1,23 @@
-# Gini - Microfinance 4.0 Platform
+# Gini Platform v1.0 - Digital Microfinance for Morocco 🇲🇦
 
-Gini is a next-generation digital banking and microfinance ecosystem designed to provide seamless financial inclusion through alternative credit scoring and instant QR-based transactions.
+Gini is a high-performance, multi-tenant financial platform designed to bridge the gap in financial inclusion through alternative credit scoring and instant digital liquidity. Built for the Moroccan market, Gini supports both **Conventional** and **Participative (Islamic)** finance models.
 
-## 🏛 Product Vision: Microfinance 4.0
-Gini transcends traditional banking by leveraging behavioral data analytics. By integrating the **CredoLab SDK**, we provide fair credit opportunities to underbanked populations, using non-traditional data points to build a robust financial identity.
+## 🏛 Platform Vision
+Gini transforms behavioral data into financial opportunity. By leveraging the **CredoLab SDK** and a modular **BaaS Orchestrator**, we provide unbanked and underbanked populations with access to fair, transparent, and regulated financial services.
 
-## 🛠 Technology Stack
-- **Mobile**: React Native (0.71.11) with TypeScript.
-- **Styling**: NativeWind (Tailwind CSS for React Native).
-- **State Management**: React Context API (Modularized).
-- **Backend**: Node.js / Express with Sequelize ORM.
-- **Database**: PostgreSQL.
-- **Security**: Biometric authentication & Encrypted storage.
+## 🛠 Enterprise Tech Stack
+| Layer | Technology |
+|-------|------------|
+| **Mobile** | React Native (0.71), TypeScript, NativeWind |
+| **Backend** | Node.js, Express, Sequelize ORM |
+| **Database** | PostgreSQL (Hardened with PII Encryption) |
+| **Scoring** | CredoLab SDK (Behavioral Analytics) |
+| **Compliance** | Regula (KYC), Damanesign (Digital Signature) |
+| **Hardening** | AES-256-CBC Encryption, CNDP 09-08 Alignment |
 
-## 🚀 Developer Quickstart (Development)
+## 🚀 10-Minute Local Setup
 
-The platform is a modular monorepo. Follow these steps for local setup:
-
-### Step 1: Mobile Core (React Native)
-From the root directory, install dependencies and start the Metro bundler.
+### 1. Root & Mobile Core
 ```bash
 npm install
 npx react-native start
@@ -26,30 +25,26 @@ npx react-native start
 npx react-native run-android # or run-ios
 ```
 
-### Step 2: Backend API (Node.js)
-Navigate to the server directory, install dependencies, and start the API server.
+### 2. Backend API
 ```bash
 cd server
 npm install
+# Create .env from .env.example
 npm start
 ```
 
-### Step 3: Admin Portal (Web Dashboard)
-Navigate to the admin portal directory and serve the static files or install dependencies.
+### 3. Admin Dashboard
+The Admin Portal is a standalone static dashboard located in `server/admin-portal`.
 ```bash
 cd server/admin-portal
-# Use a local server (e.g., Live Server or python -m http.server)
-# Default API endpoint: http://localhost:5000/api/admin
+# Serve using any static server (e.g., Live Server or python -m http.server)
 ```
 
-## 📱 WhatsApp Mocking (Local Testing)
-For local development, the WhatsApp 2FA flow is simulated in the `NotificationService.js`.
-1. Initiate a **Cash-In** operation via the `/api/agent/cash-in` endpoint.
-2. Check the **Server Console Logs** to see the simulated WhatsApp message.
-3. Use the static code `1234` to verify the transaction in development.
+## 📱 WhatsApp 2FA Mocking
+In development mode, 2FA codes are printed to the server console. Use the static code `1234` to bypass verification for Cash-In operations.
 
-## 📁 Documentation
-Detailed blueprints and guides are located in `server/docs/`:
-- **[API Reference](server/docs/API_REFERENCE.md)**
-- **[Database Map](server/docs/DATABASE_MAP.md)**
-- **[Architecture Blueprint](ARCHITECTURE.md)**
+## 📂 Internal Documentation
+- **[API Reference](server/docs/API_REFERENCE.md)**: Full endpoint documentation.
+- **[Architecture Blueprint](ARCHITECTURE.md)**: System design and logic flows.
+- **[Database Map](server/docs/DATABASE_MAP.md)**: Schema and ledger definitions.
+- **[Handover Guide](HANDOVER.md)**: Transition notes for technical teams.

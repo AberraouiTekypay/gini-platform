@@ -8,7 +8,7 @@ const loggingMiddleware = (req, res, next) => {
   const mask = (str) => {
     if (!str || typeof str !== 'string') return str;
     if (str.length <= 4) return '****';
-    return '*'.repeat(str.length - 4) + str.slice(-4);
+    return '*****' + str.slice(-4);
   };
 
   const body = { ...req.body };

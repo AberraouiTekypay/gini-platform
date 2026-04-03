@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://gini:password@db:5432/ginidb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: gini
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ginidb
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"

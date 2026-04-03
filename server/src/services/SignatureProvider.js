@@ -1,10 +1,16 @@
 // server/src/services/SignatureProvider.js
 const Loan = require('../models/loan');
+const { isMockMode } = require('../utils/config');
 
 /**
  * Digital Signature Provider using Damanesign integration logic.
  */
 class DamanesignProvider {
+  constructor() {
+    this.isMock = isMockMode('DAMANESIGN');
+    if (this.isMock) console.log('[DamanesignProvider] Initialized in MOCK mode.');
+  }
+
   /**
    * Generates a contract for a user to sign.
    * @param {number} userId - ID of the user.

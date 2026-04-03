@@ -1,9 +1,16 @@
 // server/src/providers/RegulaProvider.js
 
+const { isMockMode } = require('../utils/config');
+
 /**
  * Regula SDK provider for identity verification.
  */
 class RegulaProvider {
+  constructor() {
+    this.isMock = isMockMode('REGULA');
+    if (this.isMock) console.log('[RegulaProvider] Initialized in MOCK mode.');
+  }
+
   /**
    * Mock verifyIdentity implementation.
    * @param {Array} images - ID card/face image data.

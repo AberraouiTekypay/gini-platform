@@ -1,9 +1,16 @@
 // server/src/providers/BankingProvider.js
 
+const { isMockMode } = require('../utils/config');
+
 /**
  * Simulated Banking Provider for managing fund transfers.
  */
 class BankingProvider {
+  constructor() {
+    this.isMock = isMockMode('LANACASH');
+    if (this.isMock) console.log('[BankingProvider] Initialized in MOCK mode.');
+  }
+
   /**
    * Simulates a deposit of funds into a user's account/wallet.
    * @param {string} walletId - Target wallet ID.

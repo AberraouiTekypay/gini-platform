@@ -2,6 +2,7 @@
 const Wallet = require('../models/wallet');
 const Transaction = require('../models/transaction');
 const { sequelize } = require('../models');
+const WebhookDispatcher = require('../services/WebhookDispatcher');
 
 /**
  * Public Merchant API
@@ -30,9 +31,23 @@ const merchantController = {
    * Finalize payment (after customer approval in mobile app).
    */
   confirmPayment: async (req, res) => {
-    const { paymentReference, customerId } = req.body;
-    // Logic: Deduct from customer, add to merchant wallet, trigger callbackUrl
-    res.json({ status: 'SETTLED', message: 'Merchant payment completed.' });
+    const { paymentReference, customerId, amount, callbackUrl } = req.body;
+    
+    // In production, we'd find the merchant's webhook secret
+    const merchantSecret = 'wh_sec_test_9982'; 
+
+    try {
+      await WebhookDispatcher.dispatch(callbackUrl, {
+        status: 'SETTLED',
+        paymentReference,
+        amount,
+        timestamp: new Date().toISOString()
+      }, merchantSecret);
+
+      res.json({ status: 'SETTLED', message: 'Merchant payment completed. Webhook dispatched.' });
+    } catch (err) {
+      res.status(500).json({ error: 'Webhook dispatch failed' });
+    }
   }
 };
 

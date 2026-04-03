@@ -15,4 +15,7 @@ router.post('/deposit', authenticate, idempotency, walletController.depositFunds
 // Transfer funds between wallets
 router.post('/transfer', authenticate, idempotency, walletController.transferFunds);
 
+// Download monthly statement
+router.get('/statement', authenticate, walletController.getStatement);
+
 module.exports = router;

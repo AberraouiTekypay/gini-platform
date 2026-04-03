@@ -148,6 +148,27 @@ const walletController = {
       await t.rollback();
       res.status(400).json({ error: err.message });
     }
+  },
+
+  /**
+   * Generate and download monthly statement.
+   */
+  getStatement: async (req, res) => {
+    const StatementService = require('../services/StatementService');
+    try {
+      const user = await User.findByPk(req.user.id);
+      const wallet = await Wallet.findOne({ where: { UserId: user.id } });
+      const transactions = await Transaction.findAll({ 
+        where: { WalletId: wallet.id },
+        order: [['createdAt', 'DESC']],
+        limit: 50 // Last 50 for the statement
+      });
+
+      const pdfPath = await StatementService.generateMonthlyStatement(user, transactions);
+      res.download(pdfPath);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 

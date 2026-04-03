@@ -18,6 +18,7 @@ Gini is built as a **Modular Monolith** using **Node.js (Express)** and **Postgr
 - **Murabaha Logic**: Fixed profit margins instead of interest. Penalties for late payments are channeled to 'Charity Contributions' (Don à caractère social).
 - **Interoperability**: ISO 20022 aligned `SwitchService.js` for transfers to external wallets (M-Pesa, MT Cash).
 - **Real-Time Engagement**: `AlertService.js` triggers Push Notifications for all critical account events.
+- **Offline Reach**: `UssdService.js` provides a `*123#` gateway for balance checks and cash-outs on feature phones.
 
 ## 4. Integration Map
 | Provider | Domain | Implementation |
@@ -29,9 +30,10 @@ Gini is built as a **Modular Monolith** using **Node.js (Express)** and **Postgr
 
 ## 5. Security & Observability
 - **PII Encryption**: National ID, Email, and Phone numbers are encrypted via **AES-256-CBC** before storage.
+- **Merchant Security**: `WebhookDispatcher.js` utilizes **HMAC-SHA256** signing for all external merchant callbacks.
+- **Compliance PDF**: `StatementService.js` generates official monthly statements with digital watermarks using `pdfkit`.
 - **Maker-Checker**: Sensitive actions (> 10,000 MAD) require dual-admin authorization via `PendingAction`.
 - **Observability**: Structured logging (Winston) and Sentry placeholder for production error tracking.
-- **Log Privacy**: `logger.js` middleware redacts sensitive fields from application logs.
 
 ## 6. Technical Debt & Roadmap
 - **Priority 1: Multi-currency support**: Full dynamic currency mapping in `Partner` models.

@@ -2,14 +2,20 @@ const { Queue, Worker } = require('bullmq');
 const redisClient = require('../utils/redisClient');
 const Loan = require('../models/loan');
 const User = require('../models/user');
+const axios = require('axios');
 
 // Create a queue for Webhook events
 const webhookQueue = new Queue('webhook-events', { connection: redisClient });
 
 // Create a worker to process the events asynchronously
 const webhookWorker = new Worker('webhook-events', async (job) => {
-  const { type, payload } = job.data;
-  console.log(`[QueueWorker] Processing job ${job.id} of type ${type}...`);
+  const { type, payload, url, headers } = job.data;
+  console.log(`[QueueWorker] Processing job ${job.id} of type ${type || job.name}...`);
+
+  if (job.name === 'merchant-callback') {
+    await axios.post(url, payload, { headers });
+    return;
+  }
 
   if (type === 'REGULA_KYC') {
     const { userId, status, confidence } = payload;
